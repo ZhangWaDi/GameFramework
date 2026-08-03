@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &1
+MonoBehaviour:
+  m_ObjectHideFlags: 53
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d09c28756a29b545a38c3ddf543ab95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  xlsxInputFolder: {fileID: 102900000, guid: 2b69908f414ff0d49ba17cc7e209f223, type: 3}
+  csvOutputFolder: {fileID: 102900000, guid: d96a66a1d4dc62f4696e0811736dab8f, type: 3}
+  soScriptOutputFolder: {fileID: 102900000, guid: 8ae84a3bd65ebfc40b8b9bdcd1b107e9, type: 3}
+  soAssetOutputFolder: {fileID: 102900000, guid: 4b9460eff7001cb41bbc18e958deee61, type: 3}
+  lastGeneratedScriptOutputFolderPath: Assets/C#Scripts/Generated/ConfigData
+  dataStartRow: 6
+  dataStartColumn: 2

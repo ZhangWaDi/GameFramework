@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d25104a618568124a951732fdff1bee5, type: 3}
+  m_Name: TestOneDataSO
+  m_EditorClassIdentifier: 
+  dataList:
+  - id: 10001
+    TestString: "\u6D4B\u8BD5\u540D1"
+    TestFloat: 1
+    TestBool: 1
+    TestComma: "\u6D4B\u8BD5\u63CF\u8FF01,\u82F1\u6587\u9017\u53F7\u5206\u9694"
+  - id: 10002
+    TestString: "\u6D4B\u8BD5\u540D2"
+    TestFloat: 1.1
+    TestBool: 0
+    TestComma: "\u6D4B\u8BD5\u63CF\u8FF02,\u82F1\u6587\u9017\u53F7\u5206\u9694"
+  - id: 10003
+    TestString: "\u6D4B\u8BD5\u540D3"
+    TestFloat: 0
+    TestBool: 1
+    TestComma: "\u9ED8\u8BA4\u5B57\u7B26\u4E32"
