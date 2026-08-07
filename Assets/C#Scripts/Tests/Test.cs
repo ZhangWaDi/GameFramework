@@ -14,7 +14,7 @@ public sealed class Test : MonoBehaviour
     {
         ConfigMgr.Instance.OnInit();
         // 直接通过 行名 和 ID 读取
-        if (ConfigMgr.Instance.TryGetDataById(1, out TestOneData row1))
+        if (ConfigMgr.Instance.TryGetDataById(10001, out TestOneData row1))
         {
             int id = row1.ID;
             string testString = row1.TestString;
@@ -23,7 +23,7 @@ public sealed class Test : MonoBehaviour
         // 先读取整张表，再根据 ID 读取指定行
         if (ConfigMgr.Instance.TryGetTable(out TestOneDataSO table))
         {
-            if (table.TryGetDataById(2, out TestOneData row2))
+            if (table.TryGetDataById(10002, out TestOneData row2))
             {
                 int id = row2.ID;
                 string testString = row2.TestString;

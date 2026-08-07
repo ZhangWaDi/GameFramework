@@ -33,7 +33,9 @@ namespace GameFramework.ConfigSystem
 
             if (loadedDatabase == null)
             {
-                throw new InvalidOperationException("未能从 Resources 路径" + $"“{DefaultDatabaseResourcesPath}”加载配置数据库。" + "预期资产路径为“Assets/Resources/ConfigData/ConfigDatabase.asset”。");
+                string message = $"未能从 Resources 路径“{DefaultDatabaseResourcesPath}”加载配置数据库。预期资产路径为“Assets/Resources/ConfigData/ConfigDatabase.asset”。";
+                Logger.Instance.LogError(message);
+                throw new InvalidOperationException(message);
             }
 
             Initialize(loadedDatabase);
@@ -68,36 +70,53 @@ namespace GameFramework.ConfigSystem
                 database.Initialize();
                 isInitialized = true;
             }
-            catch
+            catch (Exception exception)
             {
                 database = null;
                 isInitialized = false;
+                Logger.Instance.LogError($"初始化配置数据库“{targetDatabase.name}”失败：{exception.Message}");
                 throw;
             }
         }
 
         /// <summary>
         /// 尝试获取指定类型的配置表。
+        /// 获取失败时输出警告并返回 false。
         /// </summary>
         public bool TryGetTable<TTable>(out TTable table)
             where TTable : ConfigTableSOBase
         {
             EnsureInitialized();
-            return database.TryGetTable(out table);
+            if (database.TryGetTable(out table))
+            {
+                return true;
+            }
+
+            Logger.Instance.LogWarning($"获取配置表失败：配置数据库“{database.name}”中不存在“{typeof(TTable).FullName}”。");
+            return false;
         }
 
         /// <summary>
         /// 获取指定类型的配置表。
+        /// 获取失败时输出错误并抛出 KeyNotFoundException。
         /// </summary>
         public TTable GetTable<TTable>()
             where TTable : ConfigTableSOBase
         {
             EnsureInitialized();
-            return database.GetTable<TTable>();
+            if (database.TryGetTable(out TTable table))
+            {
+                return table;
+            }
+
+            string message = $"获取配置表失败：配置数据库“{database.name}”中不存在“{typeof(TTable).FullName}”。";
+            Logger.Instance.LogError(message);
+            throw new KeyNotFoundException(message);
         }
 
         /// <summary>
         /// 尝试根据 ID 获取指定类型的配置数据行。
+        /// 配置表或 ID 不存在时输出警告并返回 false。
         /// </summary>
         public bool TryGetDataById<TRow>(int id, out TRow row) where TRow : ConfigDataRowBase
         {
@@ -106,28 +125,58 @@ namespace GameFramework.ConfigSystem
             if (!database.TryGetTableByRow(out ConfigTableSO<TRow> table))
             {
                 row = null;
+                Logger.Instance.LogWarning($"获取配置数据行失败：配置数据库“{database.name}”中不存在行类型“{typeof(TRow).FullName}”对应的配置表。");
                 return false;
             }
 
-            return table.TryGetDataById(id, out row);
+            if (table.TryGetDataById(id, out row))
+            {
+                return true;
+            }
+
+            Logger.Instance.LogWarning($"获取配置数据行失败：配置表“{table.name}”中不存在 ID 为 {id} 的“{typeof(TRow).FullName}”。");
+            return false;
         }
 
         /// <summary>
         /// 根据 ID 获取指定类型的配置数据行。
+        /// 配置表或 ID 不存在时输出错误并抛出 KeyNotFoundException。
         /// </summary>
         public TRow GetDataById<TRow>(int id) where TRow : ConfigDataRowBase
         {
             EnsureInitialized();
-            return database.GetTableByRow<TRow>().GetData(id);
+            if (!database.TryGetTableByRow(out ConfigTableSO<TRow> table))
+            {
+                string tableMessage = $"获取配置数据行失败：配置数据库“{database.name}”中不存在行类型“{typeof(TRow).FullName}”对应的配置表。";
+                Logger.Instance.LogError(tableMessage);
+                throw new KeyNotFoundException(tableMessage);
+            }
+
+            if (table.TryGetDataById(id, out TRow row))
+            {
+                return row;
+            }
+
+            string rowMessage = $"获取配置数据行失败：配置表“{table.name}”中不存在 ID 为 {id} 的“{typeof(TRow).FullName}”。";
+            Logger.Instance.LogError(rowMessage);
+            throw new KeyNotFoundException(rowMessage);
         }
 
         /// <summary>
         /// 获取指定类型的全部配置数据行，顺序与配置表中的数据顺序一致。
+        /// 对应配置表不存在时输出错误并抛出 KeyNotFoundException。
         /// </summary>
         public IReadOnlyList<TRow> GetAllDataByType<TRow>() where TRow : ConfigDataRowBase
         {
             EnsureInitialized();
-            return database.GetTableByRow<TRow>().DataList;
+            if (database.TryGetTableByRow(out ConfigTableSO<TRow> table))
+            {
+                return table.DataList;
+            }
+
+            string message = $"获取全部配置数据行失败：配置数据库“{database.name}”中不存在行类型“{typeof(TRow).FullName}”对应的配置表。";
+            Logger.Instance.LogError(message);
+            throw new KeyNotFoundException(message);
         }
 
         protected override void OnRelease()
@@ -149,7 +198,9 @@ namespace GameFramework.ConfigSystem
         {
             if (!isInitialized)
             {
-                throw new InvalidOperationException("ConfigMgr 尚未初始化，请在项目启动流程中调用 " + "ConfigMgr.Instance.OnInit()。");
+                const string message = "ConfigMgr 尚未初始化，请在项目启动流程中调用 ConfigMgr.Instance.OnInit()。";
+                Logger.Instance.LogError(message);
+                throw new InvalidOperationException(message);
             }
         }
     }
