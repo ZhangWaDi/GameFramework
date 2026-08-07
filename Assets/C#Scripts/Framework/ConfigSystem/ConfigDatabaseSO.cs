@@ -16,7 +16,7 @@ namespace GameFramework.ConfigSystem
         private Dictionary<Type, ConfigTableSOBase> tableByType;
 
         [NonSerialized]
-        private Dictionary<Type, ConfigTableSOBase> tableByDataType;
+        private Dictionary<Type, ConfigTableSOBase> tableByRowType;
 
         [NonSerialized]
         private bool isInitialized;
@@ -34,8 +34,8 @@ namespace GameFramework.ConfigSystem
                 return;
             }
 
-            tableByType = new Dictionary<Type, ConfigTableSOBase>(tables.Count);
-            tableByDataType = new Dictionary<Type, ConfigTableSOBase>(tables.Count);
+            tableByType = new(tables.Count);
+            tableByRowType = new(tables.Count);
 
             try
             {
@@ -53,10 +53,10 @@ namespace GameFramework.ConfigSystem
                         throw new InvalidOperationException($"配置数据库“{name}”中存在重复的配置表类型：" + $"“{tableType.FullName}”。");
                     }
 
-                    Type dataType = table.DataType;
-                    if (!tableByDataType.TryAdd(dataType, table))
+                    Type rowType = table.RowType;
+                    if (!tableByRowType.TryAdd(rowType, table))
                     {
-                        throw new InvalidOperationException($"配置数据库“{name}”中存在多个数据类型为" + $"“{dataType.FullName}”的配置表。");
+                        throw new InvalidOperationException($"配置数据库“{name}”中存在多个配置数据行类型为“{rowType.FullName}”的配置表。");
                     }
 
                     table.Initialize();
@@ -97,16 +97,16 @@ namespace GameFramework.ConfigSystem
             throw new KeyNotFoundException($"配置数据库“{name}”中不存在配置表“{typeof(TTable).FullName}”。");
         }
 
-        public bool TryGetTableByData<TData>(out ConfigTableSO<TData> table)
-            where TData : ConfigDataBase
+        /// <summary>
+        /// 尝试根据配置数据行类型获取对应的配置表。
+        /// </summary>
+        public bool TryGetTableByRow<TRow>(out ConfigTableSO<TRow> table) where TRow : ConfigDataRowBase
         {
             EnsureInitialized();
 
-            if (tableByDataType.TryGetValue(
-                    typeof(TData),
-                    out ConfigTableSOBase value))
+            if (tableByRowType.TryGetValue(typeof(TRow), out ConfigTableSOBase value))
             {
-                table = (ConfigTableSO<TData>)value;
+                table = (ConfigTableSO<TRow>)value;
                 return true;
             }
 
@@ -114,15 +114,17 @@ namespace GameFramework.ConfigSystem
             return false;
         }
 
-        public ConfigTableSO<TData> GetTableByData<TData>()
-            where TData : ConfigDataBase
+        /// <summary>
+        /// 根据配置数据行类型获取对应的配置表，不存在时抛出异常。
+        /// </summary>
+        public ConfigTableSO<TRow> GetTableByRow<TRow>() where TRow : ConfigDataRowBase
         {
-            if (TryGetTableByData(out ConfigTableSO<TData> table))
+            if (TryGetTableByRow(out ConfigTableSO<TRow> table))
             {
                 return table;
             }
 
-            throw new KeyNotFoundException($"配置数据库“{name}”中不存在数据类型" + $"“{typeof(TData).FullName}”。");
+            throw new KeyNotFoundException($"配置数据库“{name}”中不存在配置数据行类型“{typeof(TRow).FullName}”。");
         }
 
         public void Release()
@@ -139,8 +141,8 @@ namespace GameFramework.ConfigSystem
             tableByType?.Clear();
             tableByType = null;
 
-            tableByDataType?.Clear();
-            tableByDataType = null;
+            tableByRowType?.Clear();
+            tableByRowType = null;
 
             isInitialized = false;
         }

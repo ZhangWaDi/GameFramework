@@ -43,7 +43,7 @@ namespace GameFramework.ConfigData.Editor
                 "SO 脚本输出目录");
             if (ContainsEditorFolder(scriptAssetFolder))
             {
-                throw new InvalidOperationException("SO 脚本输出目录不能位于 Editor 文件夹中。" + "生成的数据类和 SO 类型需要编译到运行时程序集。");
+                throw new InvalidOperationException("SO 脚本输出目录不能位于 Editor 文件夹中。" + "生成的配置数据行类和 SO 类型需要编译到运行时程序集。");
             }
 
             string soAssetFolder = AssetDatabase.GetAssetPath(settings.SOAssetOutputFolder);

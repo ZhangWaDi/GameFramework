@@ -6,10 +6,10 @@ namespace GameFramework.ConfigSystem
 {
     /// <summary>
     /// 单行配置数据的基类。
-    /// ID 由生成的数据类型实现，并由编辑器导表流程写入。
+    /// ID 由生成的配置数据行类型实现，并由编辑器导表流程写入。
     /// </summary>
     [Serializable]
-    public abstract class ConfigDataBase
+    public abstract class ConfigDataRowBase
     {
         /// <summary>
         /// 获取或设置当前数据行的唯一 ID。
@@ -28,7 +28,10 @@ namespace GameFramework.ConfigSystem
 
         public bool IsInitialized => isInitialized;
 
-        public abstract Type DataType { get; }
+        /// <summary>
+        /// 获取当前配置表保存的配置数据行类型。
+        /// </summary>
+        public abstract Type RowType { get; }
 
         public abstract int Count { get; }
 
@@ -71,26 +74,26 @@ namespace GameFramework.ConfigSystem
 
     /// <summary>
     /// 配置表的通用基类。
-    /// 序列化保存数据列表，并在运行时建立 ID 到数据的索引。
+    /// 序列化保存配置数据行列表，并在运行时建立 ID 到数据行的索引。
     /// 具体配置表只需要继承当前泛型类，无需重复实现查询逻辑。
     /// </summary>
-    /// <typeparam name="TData">当前配置表保存的数据类型。</typeparam>
-    public abstract class ConfigTableSO<TData> : ConfigTableSOBase where TData : ConfigDataBase
+    /// <typeparam name="TRow">当前配置表保存的配置数据行类型。</typeparam>
+    public abstract class ConfigTableSO<TRow> : ConfigTableSOBase where TRow : ConfigDataRowBase
     {
         [SerializeField]
-        private List<TData> dataList = new();
+        private List<TRow> dataList = new();
 
         [NonSerialized]
-        private Dictionary<int, TData> dataById;
+        private Dictionary<int, TRow> dataById;
 
         [NonSerialized]
         private List<int> dataIds;
 
-        public override Type DataType => typeof(TData);
+        public override Type RowType => typeof(TRow);
 
         public override int Count => dataList.Count;
 
-        public IReadOnlyList<TData> DataList => dataList;
+        public IReadOnlyList<TRow> DataList => dataList;
 
         /// <summary>
         /// 获取当前配置表中的全部 ID，顺序与序列化数据列表一致。
@@ -108,24 +111,24 @@ namespace GameFramework.ConfigSystem
         /// 尝试通过 ID 读取一行配置数据。
         /// 调用前要求当前表已经由配置数据库初始化。
         /// </summary>
-        public bool TryGetData(int id, out TData data)
+        public bool TryGetDataById(int id, out TRow row)
         {
             EnsureInitialized();
-            return dataById.TryGetValue(id, out data);
+            return dataById.TryGetValue(id, out row);
         }
 
         /// <summary>
         /// 通过 ID 获取一行配置数据。
         /// ID 不存在时抛出 KeyNotFoundException。
         /// </summary>
-        public TData GetData(int id)
+        public TRow GetData(int id)
         {
-            if (TryGetData(id, out TData data))
+            if (TryGetDataById(id, out TRow row))
             {
-                return data;
+                return row;
             }
 
-            throw new KeyNotFoundException($"配置表“{name}”中不存在 ID 为 {id} 的 {typeof(TData).Name} 数据。");
+            throw new KeyNotFoundException($"配置表“{name}”中不存在 ID 为 {id} 的 {typeof(TRow).Name} 配置数据行。");
         }
 
         /// <summary>
@@ -133,23 +136,23 @@ namespace GameFramework.ConfigSystem
         /// </summary>
         protected override void BuildIndex()
         {
-            dataById = new Dictionary<int, TData>(dataList.Count);
-            dataIds = new List<int>(dataList.Count);
+            dataById = new(dataList.Count);
+            dataIds = new(dataList.Count);
 
             for (int index = 0; index < dataList.Count; index++)
             {
-                TData data = dataList[index];
-                if (data == null)
+                TRow row = dataList[index];
+                if (row == null)
                 {
-                    throw new InvalidOperationException($"配置表“{name}”中索引为 {index} 的数据为空。");
+                    throw new InvalidOperationException($"配置表“{name}”中索引为 {index} 的配置数据行为空。");
                 }
 
-                if (!dataById.TryAdd(data.ID, data))
+                if (!dataById.TryAdd(row.ID, row))
                 {
-                    throw new InvalidOperationException($"配置表“{name}”中存在重复 ID：{data.ID}。");
+                    throw new InvalidOperationException($"配置表“{name}”中存在重复 ID：{row.ID}。");
                 }
 
-                dataIds.Add(data.ID);
+                dataIds.Add(row.ID);
             }
         }
 

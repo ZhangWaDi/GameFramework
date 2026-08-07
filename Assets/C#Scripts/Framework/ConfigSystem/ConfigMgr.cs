@@ -97,41 +97,37 @@ namespace GameFramework.ConfigSystem
         }
 
         /// <summary>
-        /// 尝试根据 ID 获取指定类型的配置数据。
+        /// 尝试根据 ID 获取指定类型的配置数据行。
         /// </summary>
-        public bool TryGetDataById<TData>(int id, out TData data)
-            where TData : ConfigDataBase
+        public bool TryGetDataById<TRow>(int id, out TRow row) where TRow : ConfigDataRowBase
         {
             EnsureInitialized();
 
-            if (!database.TryGetTableByData(
-                    out ConfigTableSO<TData> table))
+            if (!database.TryGetTableByRow(out ConfigTableSO<TRow> table))
             {
-                data = null;
+                row = null;
                 return false;
             }
 
-            return table.TryGetData(id, out data);
+            return table.TryGetDataById(id, out row);
         }
 
         /// <summary>
-        /// 根据 ID 获取指定类型的配置数据。
+        /// 根据 ID 获取指定类型的配置数据行。
         /// </summary>
-        public TData GetDataById<TData>(int id)
-            where TData : ConfigDataBase
+        public TRow GetDataById<TRow>(int id) where TRow : ConfigDataRowBase
         {
             EnsureInitialized();
-            return database.GetTableByData<TData>().GetData(id);
+            return database.GetTableByRow<TRow>().GetData(id);
         }
 
         /// <summary>
-        /// 获取指定类型的全部配置数据，顺序与配置表中的数据顺序一致。
+        /// 获取指定类型的全部配置数据行，顺序与配置表中的数据顺序一致。
         /// </summary>
-        public IReadOnlyList<TData> GetAllDataByType<TData>()
-            where TData : ConfigDataBase
+        public IReadOnlyList<TRow> GetAllDataByType<TRow>() where TRow : ConfigDataRowBase
         {
             EnsureInitialized();
-            return database.GetTableByData<TData>().DataList;
+            return database.GetTableByRow<TRow>().DataList;
         }
 
         protected override void OnRelease()

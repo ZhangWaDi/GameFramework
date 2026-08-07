@@ -104,7 +104,7 @@ namespace GameFramework.ConfigData.Editor
                 "ID",
                 StringComparison.Ordinal));
 
-        public string DataTypeFullName =>
+        public string RowTypeFullName =>
             $"{ConfigTableGenerationPaths.GeneratedNamespace}.{TableName}";
 
         public string TableTypeFullName =>

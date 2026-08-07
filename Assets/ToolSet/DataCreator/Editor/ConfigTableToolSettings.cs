@@ -52,7 +52,7 @@ namespace GameFramework.ConfigData.Editor
         }
 
         /// <summary>
-        /// 获取或设置配置表数据类及具体 SO 类型脚本的输出目录。
+        /// 获取或设置配置数据行类及具体 SO 类型脚本的输出目录。
         /// 生成脚本属于运行时代码，因此不能放入 Editor 目录。
         /// </summary>
         public DefaultAsset SOScriptOutputFolder

@@ -111,7 +111,7 @@ namespace GameFramework.ConfigData.Editor
                 List<ConfigTableSOBase> tableAssets = preparedTables.Select(item => item.ResultAsset).ToList();
                 tablesField.SetValue(database, tableAssets);
 
-                // 数据库初始化可验证表类型和数据类型是否重复。
+                // 数据库初始化可验证配置表类型和配置数据行类型是否重复。
                 database.Initialize();
                 database.Release();
                 EditorUtility.SetDirty(database);
@@ -134,7 +134,7 @@ namespace GameFramework.ConfigData.Editor
         }
 
         /// <summary>
-        /// 发现生成类型、创建强类型 List&lt;T&gt;，并把中间数据行映射到生成字段。
+        /// 发现生成的配置数据行类型、创建强类型 List&lt;T&gt;，并把中间数据行映射到生成字段。
         /// 此阶段不会修改 Unity 资产。
         /// </summary>
         private static PreparedTable PrepareTable(
@@ -142,17 +142,17 @@ namespace GameFramework.ConfigData.Editor
             string tableAssetFolder)
         {
             ConfigTableSchema schema = definition.Schema;
-            Type dataType = FindLoadedType(schema.DataTypeFullName);
+            Type rowType = FindLoadedType(schema.RowTypeFullName);
             Type tableType = FindLoadedType(schema.TableTypeFullName);
 
-            if (dataType == null || tableType == null)
+            if (rowType == null || tableType == null)
             {
                 throw new InvalidOperationException($"尚未加载配置表“{schema.TableName}”的生成类型。" + "请确认 Unity 脚本编译已成功完成。");
             }
 
-            if (!typeof(ConfigDataBase).IsAssignableFrom(dataType))
+            if (!typeof(ConfigDataRowBase).IsAssignableFrom(rowType))
             {
-                throw new InvalidOperationException($"生成数据类型“{dataType.FullName}”没有继承 ConfigDataBase。");
+                throw new InvalidOperationException($"生成的配置数据行类型“{rowType.FullName}”没有继承 ConfigDataRowBase。");
             }
 
             if (!typeof(ConfigTableSOBase).IsAssignableFrom(tableType))
@@ -161,7 +161,7 @@ namespace GameFramework.ConfigData.Editor
             }
 
             FieldInfo dataListField = FindField(tableType, "dataList");
-            Type expectedListType = typeof(List<>).MakeGenericType(dataType);
+            Type expectedListType = typeof(List<>).MakeGenericType(rowType);
             if (dataListField.FieldType != expectedListType)
             {
                 throw new InvalidOperationException($"配置表“{schema.TableName}”的序列化列表类型不匹配：" + $"期望“{expectedListType.FullName}”，实际“{dataListField.FieldType.FullName}”。");
@@ -170,14 +170,14 @@ namespace GameFramework.ConfigData.Editor
             IList typedRows = (IList)Activator.CreateInstance(expectedListType);
             foreach (ConfigTableDataRow sourceRow in definition.Rows)
             {
-                object targetRow = Activator.CreateInstance(dataType);
+                object targetRow = Activator.CreateInstance(rowType);
                 for (int fieldIndex = 0; fieldIndex < schema.Fields.Count; fieldIndex++)
                 {
                     ConfigFieldSchema field = schema.Fields[fieldIndex];
                     object value = sourceRow.Values[fieldIndex];
                     SetGeneratedMember(
                         targetRow,
-                        dataType,
+                        rowType,
                         field,
                         value,
                         sourceRow.SourceRow);
@@ -213,32 +213,32 @@ namespace GameFramework.ConfigData.Editor
 
         private static void SetGeneratedMember(
             object target,
-            Type dataType,
+            Type rowType,
             ConfigFieldSchema field,
             object value,
             int sourceRow)
         {
             if (string.Equals(field.Name, "ID", StringComparison.Ordinal))
             {
-                PropertyInfo idProperty = dataType.GetProperty("ID", BindingFlags.Instance | BindingFlags.Public);
+                PropertyInfo idProperty = rowType.GetProperty("ID", BindingFlags.Instance | BindingFlags.Public);
                 if (idProperty == null || !idProperty.CanWrite)
                 {
-                    throw new MissingMemberException(dataType.FullName, "ID");
+                    throw new MissingMemberException(rowType.FullName, "ID");
                 }
 
                 idProperty.SetValue(target, value);
                 return;
             }
 
-            FieldInfo targetField = dataType.GetField(field.Name, BindingFlags.Instance | BindingFlags.Public);
+            FieldInfo targetField = rowType.GetField(field.Name, BindingFlags.Instance | BindingFlags.Public);
             if (targetField == null)
             {
-                throw new MissingFieldException($"生成类型“{dataType.FullName}”缺少字段“{field.Name}”" + $"（CSV 第 {sourceRow} 行）。");
+                throw new MissingFieldException($"生成的配置数据行类型“{rowType.FullName}”缺少字段“{field.Name}”（CSV 第 {sourceRow} 行）。");
             }
 
             if (value != null && !targetField.FieldType.IsInstanceOfType(value))
             {
-                throw new InvalidCastException($"字段“{dataType.Name}.{field.Name}”期望" + $"“{targetField.FieldType.FullName}”，实际收到" + $"“{value.GetType().FullName}”（CSV 第 {sourceRow} 行）。");
+                throw new InvalidCastException($"字段“{rowType.Name}.{field.Name}”期望“{targetField.FieldType.FullName}”，实际收到“{value.GetType().FullName}”（CSV 第 {sourceRow} 行）。");
             }
 
             targetField.SetValue(target, value);

@@ -10,7 +10,7 @@ using GameFramework.ConfigSystem;
 namespace GameFramework.ConfigData.Generated
 {
     [Serializable]
-    public sealed class TestOneData : ConfigDataBase
+    public sealed class TestOneData : ConfigDataRowBase
     {
         [SerializeField]
         private int id;

@@ -73,7 +73,7 @@ namespace GameFramework.ConfigData.Editor
                 "行列坐标从 1 开始，当前默认从第 6 行、第 2 列读取正式配置数据。" +
                 "第一列仅作为行描述时不会写入 SO。\n" +
                 "#check 支持 NonEmpty 和 Unique，多个标签可用逗号、空格、分号或 | 分隔。\n" +
-                "SO 脚本目录用于生成数据类和 XXXSO.cs，不能选择 Editor 目录；" +
+                "SO 脚本目录用于生成配置数据行类和 XXXSO.cs，不能选择 Editor 目录；" +
                 "SO 资产目录用于生成 XXXSO.asset。\n" +
                 "ConfigDatabase 固定生成到 Assets/Resources/ConfigData，" +
                 "并引用 SO 资产目录中的配置表资产。",

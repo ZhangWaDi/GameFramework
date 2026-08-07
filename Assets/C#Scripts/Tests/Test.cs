@@ -1,7 +1,5 @@
-using System;
 using GameFramework.ConfigData.Generated;
 using GameFramework.ConfigSystem;
-using GameFramework.EventSystem;
 using UnityEngine;
 
 public sealed class Test : MonoBehaviour
@@ -15,8 +13,23 @@ public sealed class Test : MonoBehaviour
     void Start()
     {
         ConfigMgr.Instance.OnInit();
-        TestOneData config = ConfigMgr.Instance.GetConfig<TestOneData>(1);
-        Debug.Log(config);
+        // 直接通过 行名 和 ID 读取
+        if (ConfigMgr.Instance.TryGetDataById(1, out TestOneData row1))
+        {
+            int id = row1.ID;
+            string testString = row1.TestString;
+            GameFramework.Logger.Instance.LogInfo($"测试读取配置TestOneData Id: {id}， TestString: {testString}");
+        }
+        // 先读取整张表，再根据 ID 读取指定行
+        if (ConfigMgr.Instance.TryGetTable(out TestOneDataSO table))
+        {
+            if (table.TryGetDataById(2, out TestOneData row2))
+            {
+                int id = row2.ID;
+                string testString = row2.TestString;
+                GameFramework.Logger.Instance.LogInfo($"测试读取配置TestOneData Id: {id}， TestString: {testString}");
+            }
+        }
         // EventCenter.Instance.AddEventListener(TestEvent.AAA, 无参事件);
         // EventCenter.Instance.AddEventListener<int, int>(TestEvent.AAA, 有参事件);
         // EventCenter.Instance.EventTrigger(TestEvent.AAA);

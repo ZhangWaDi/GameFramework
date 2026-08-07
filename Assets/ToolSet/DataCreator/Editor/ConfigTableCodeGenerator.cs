@@ -8,7 +8,7 @@ using UnityEngine;
 namespace GameFramework.ConfigData.Editor
 {
     /// <summary>
-    /// 根据配置表 Schema 生成强类型数据类和薄 SO 类型。
+    /// 根据配置表 Schema 生成强类型配置数据行类和薄 SO 类型。
     /// 生成代码只描述数据结构，不包含 CSV 解析或字段转换逻辑。
     /// </summary>
     internal static class ConfigTableCodeGenerator
@@ -86,8 +86,8 @@ namespace GameFramework.ConfigData.Editor
         }
 
         /// <summary>
-        /// 构建单张表的数据类源码。
-        /// #desc 会转换为 XML 注释；ID 使用可序列化属性实现基类索引契约。
+        /// 构建单张表的配置数据行类源码。
+        /// #desc 会转换为 XML 注释；ID 使用可序列化属性实现数据行基类的索引契约。
         /// </summary>
         private static string BuildDataSource(ConfigTableSchema schema)
         {
@@ -101,7 +101,7 @@ namespace GameFramework.ConfigData.Editor
             source.AppendLine($"namespace {ConfigTableGenerationPaths.GeneratedNamespace}");
             source.AppendLine("{");
             source.AppendLine("    [Serializable]");
-            source.AppendLine($"    public sealed class {schema.TableName} : ConfigDataBase");
+            source.AppendLine($"    public sealed class {schema.TableName} : ConfigDataRowBase");
             source.AppendLine("    {");
 
             for (int index = 0; index < schema.Fields.Count; index++)
