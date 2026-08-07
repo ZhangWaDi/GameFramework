@@ -32,5 +32,5 @@ MonoBehaviour:
   - id: 10003
     TestIntList: 0100000002000000
     TestFloatList: []
-    TestBoolList: 00000000
+    TestBoolList: 0100
     TestStringlList: []

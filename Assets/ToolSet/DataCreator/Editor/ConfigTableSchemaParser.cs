@@ -18,37 +18,11 @@ namespace GameFramework.ConfigData.Editor
         private const string CheckMarker = "#check";
         private const string DefaultMarker = "#default";
 
-        private static readonly string[] RequiredMarkers =
-        {
-            VarMarker,
-            TypeMarker,
-            DescriptionMarker,
-            CheckMarker,
-            DefaultMarker
-        };
+        private static readonly string[] RequiredMarkers = { VarMarker, TypeMarker, DescriptionMarker, CheckMarker, DefaultMarker };
 
-        private static readonly Regex IdentifierRegex =
-            new Regex(
-                "^[A-Za-z_][A-Za-z0-9_]*$",
-                RegexOptions.Compiled | RegexOptions.CultureInvariant);
+        private static readonly Regex IdentifierRegex = new("^[A-Za-z_][A-Za-z0-9_]*$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
-        private static readonly HashSet<string> CSharpKeywords =
-            new HashSet<string>(StringComparer.Ordinal)
-            {
-                "abstract", "as", "base", "bool", "break", "byte", "case",
-                "catch", "char", "checked", "class", "const", "continue",
-                "decimal", "default", "delegate", "do", "double", "else",
-                "enum", "event", "explicit", "extern", "false", "finally",
-                "fixed", "float", "for", "foreach", "goto", "if", "implicit",
-                "in", "int", "interface", "internal", "is", "lock", "long",
-                "namespace", "new", "null", "object", "operator", "out",
-                "override", "params", "private", "protected", "public",
-                "readonly", "ref", "return", "sbyte", "sealed", "short",
-                "sizeof", "stackalloc", "static", "string", "struct",
-                "switch", "this", "throw", "true", "try", "typeof", "uint",
-                "ulong", "unchecked", "unsafe", "ushort", "using", "virtual",
-                "void", "volatile", "while"
-            };
+        private static readonly HashSet<string> CSharpKeywords = new(StringComparer.Ordinal) { "abstract", "as", "base", "bool", "break", "byte", "case", "catch", "char", "checked", "class", "const", "continue", "decimal", "default", "delegate", "do", "double", "else", "enum", "event", "explicit", "extern", "false", "finally", "fixed", "float", "for", "foreach", "goto", "if", "implicit", "in", "int", "interface", "internal", "is", "lock", "long", "namespace", "new", "null", "object", "operator", "out", "override", "params", "private", "protected", "public", "readonly", "ref", "return", "sbyte", "sealed", "short", "sizeof", "stackalloc", "static", "string", "struct", "switch", "this", "throw", "true", "try", "typeof", "uint", "ulong", "unchecked", "unsafe", "ushort", "using", "virtual", "void", "volatile", "while" };
 
         /// <summary>
         /// 解析单张 CSV 配置表。
@@ -108,18 +82,14 @@ namespace GameFramework.ConfigData.Editor
                 hasStructuralError = true;
             }
 
-            Dictionary<string, CsvRecord> markerRecords = FindMarkerRecords(
-                document,
-                diagnostics,
-                ref hasStructuralError);
+            Dictionary<string, CsvRecord> markerRecords = FindMarkerRecords(document, diagnostics, ref hasStructuralError);
 
             if (hasStructuralError)
             {
                 return null;
             }
 
-            int lastMetadataRecord = markerRecords.Values
-                .Max(record => record.RecordNumber);
+            int lastMetadataRecord = markerRecords.Values.Max(record => record.RecordNumber);
             if (dataStartRow <= lastMetadataRecord)
             {
                 AddError(
@@ -132,11 +102,7 @@ namespace GameFramework.ConfigData.Editor
                 return null;
             }
 
-            List<ConfigFieldSchema> fields = ParseFields(
-                document.SourcePath,
-                markerRecords,
-                dataStartColumn,
-                diagnostics);
+            List<ConfigFieldSchema> fields = ParseFields(document.SourcePath, markerRecords, dataStartColumn, diagnostics);
 
             if (fields.Count == 0 ||
                 diagnostics.Any(item =>
@@ -149,19 +115,9 @@ namespace GameFramework.ConfigData.Editor
                 return null;
             }
 
-            ConfigTableSchema schema = new ConfigTableSchema
-            {
-                SourcePath = document.SourcePath,
-                TableName = tableName,
-                DataStartRow = dataStartRow,
-                DataStartColumn = dataStartColumn,
-                Fields = fields
-            };
+            ConfigTableSchema schema = new() { SourcePath = document.SourcePath, TableName = tableName, DataStartRow = dataStartRow, DataStartColumn = dataStartColumn, Fields = fields };
 
-            List<ConfigTableDataRow> rows = ParseDataRows(
-                document,
-                schema,
-                diagnostics);
+            List<ConfigTableDataRow> rows = ParseDataRows(document, schema, diagnostics);
 
             return new ConfigTableDefinition(schema, rows);
         }
@@ -175,10 +131,8 @@ namespace GameFramework.ConfigData.Editor
             ICollection<ConfigTableDiagnostic> diagnostics,
             ref bool hasStructuralError)
         {
-            Dictionary<string, CsvRecord> result =
-                new Dictionary<string, CsvRecord>(StringComparer.OrdinalIgnoreCase);
-            HashSet<string> requiredMarkers =
-                new HashSet<string>(RequiredMarkers, StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, CsvRecord> result = new(StringComparer.OrdinalIgnoreCase);
+            HashSet<string> requiredMarkers = new(RequiredMarkers, StringComparer.OrdinalIgnoreCase);
 
             foreach (CsvRecord record in document.Records)
             {
@@ -237,9 +191,7 @@ namespace GameFramework.ConfigData.Editor
             CsvRecord checkRecord = markerRecords[CheckMarker];
             CsvRecord defaultRecord = markerRecords[DefaultMarker];
 
-            int lastFieldColumn = FindLastNonEmptyColumn(
-                varRecord,
-                dataStartColumn);
+            int lastFieldColumn = FindLastNonEmptyColumn(varRecord, dataStartColumn);
             if (lastFieldColumn < dataStartColumn)
             {
                 AddError(
@@ -251,15 +203,7 @@ namespace GameFramework.ConfigData.Editor
                 return new List<ConfigFieldSchema>();
             }
 
-            int metadataColumnCount = new[]
-                {
-                    varRecord.CellCount,
-                    typeRecord.CellCount,
-                    descriptionRecord.CellCount,
-                    checkRecord.CellCount,
-                    defaultRecord.CellCount
-                }
-                .Max();
+            int metadataColumnCount = new[] { varRecord.CellCount, typeRecord.CellCount, descriptionRecord.CellCount, checkRecord.CellCount, defaultRecord.CellCount }.Max();
 
             ValidateNoMetadataBeyondFields(
                 sourcePath,
@@ -268,8 +212,8 @@ namespace GameFramework.ConfigData.Editor
                 metadataColumnCount,
                 diagnostics);
 
-            List<ConfigFieldSchema> fields = new List<ConfigFieldSchema>();
-            HashSet<string> fieldNames = new HashSet<string>(StringComparer.Ordinal);
+            List<ConfigFieldSchema> fields = new();
+            HashSet<string> fieldNames = new(StringComparer.Ordinal);
 
             for (int column = dataStartColumn; column <= lastFieldColumn; column++)
             {
@@ -324,16 +268,7 @@ namespace GameFramework.ConfigData.Editor
                 }
 
                 string defaultRawValue = defaultRecord.GetCell(column).Value;
-                ConfigFieldSchema field = new ConfigFieldSchema
-                {
-                    SourceColumn = column,
-                    Name = fieldName,
-                    Kind = kind,
-                    Description = descriptionRecord.GetCell(column).Value,
-                    CheckExpression = checkRecord.GetCell(column).Value,
-                    DefaultRawValue = defaultRawValue,
-                    HasExplicitDefault = !string.IsNullOrEmpty(defaultRawValue)
-                };
+                ConfigFieldSchema field = new() { SourceColumn = column, Name = fieldName, Kind = kind, Description = descriptionRecord.GetCell(column).Value, CheckExpression = checkRecord.GetCell(column).Value, DefaultRawValue = defaultRawValue, HasExplicitDefault = !string.IsNullOrEmpty(defaultRawValue) };
 
                 if (field.HasExplicitDefault)
                 {
@@ -377,9 +312,7 @@ namespace GameFramework.ConfigData.Editor
             int metadataColumnCount,
             ICollection<ConfigTableDiagnostic> diagnostics)
         {
-            for (int column = lastFieldColumn + 1;
-                 column <= metadataColumnCount;
-                 column++)
+            for (int column = lastFieldColumn + 1; column <= metadataColumnCount; column++)
             {
                 foreach (KeyValuePair<string, CsvRecord> pair in markerRecords)
                 {
@@ -404,8 +337,7 @@ namespace GameFramework.ConfigData.Editor
             IReadOnlyDictionary<string, CsvRecord> markerRecords,
             ICollection<ConfigTableDiagnostic> diagnostics)
         {
-            ConfigFieldSchema idField = fields.FirstOrDefault(field =>
-                string.Equals(field.Name, "ID", StringComparison.Ordinal));
+            ConfigFieldSchema idField = fields.FirstOrDefault(field => string.Equals(field.Name, "ID", StringComparison.Ordinal));
 
             if (idField == null)
             {
@@ -438,24 +370,14 @@ namespace GameFramework.ConfigData.Editor
             ConfigTableSchema schema,
             ICollection<ConfigTableDiagnostic> diagnostics)
         {
-            List<ConfigTableDataRow> rows = new List<ConfigTableDataRow>();
-            HashSet<int> ids = new HashSet<int>();
-            int idIndex = schema.Fields
-                .Select((field, index) => new { field, index })
-                .First(item => string.Equals(
-                    item.field.Name,
-                    "ID",
-                    StringComparison.Ordinal))
-                .index;
+            List<ConfigTableDataRow> rows = new();
+            HashSet<int> ids = new();
+            int idIndex = schema.Fields.Select((field, index) => new { field, index }).First(item => string.Equals(item.field.Name, "ID", StringComparison.Ordinal)).index;
 
-            for (int recordIndex = schema.DataStartRow - 1;
-                 recordIndex < document.Records.Count;
-                 recordIndex++)
+            for (int recordIndex = schema.DataStartRow - 1; recordIndex < document.Records.Count; recordIndex++)
             {
                 CsvRecord record = document.Records[recordIndex];
-                bool hasRawData = schema.Fields.Any(field =>
-                    !string.IsNullOrEmpty(
-                        record.GetCell(field.SourceColumn).Value));
+                bool hasRawData = schema.Fields.Any(field => !string.IsNullOrEmpty(record.GetCell(field.SourceColumn).Value));
 
                 if (!hasRawData)
                 {
@@ -465,9 +387,7 @@ namespace GameFramework.ConfigData.Editor
                 object[] values = new object[schema.Fields.Count];
                 bool rowIsValid = true;
 
-                for (int fieldIndex = 0;
-                     fieldIndex < schema.Fields.Count;
-                     fieldIndex++)
+                for (int fieldIndex = 0; fieldIndex < schema.Fields.Count; fieldIndex++)
                 {
                     ConfigFieldSchema field = schema.Fields[fieldIndex];
                     string rawValue = record.GetCell(field.SourceColumn).Value;

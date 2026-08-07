@@ -12,10 +12,8 @@ namespace GameFramework.ConfigData.Editor
     {
         public const string DefaultXLSXInputFolderPath = "Assets/ConfigTables/XLSX";
         public const string DefaultCSVOutputFolderPath = "Assets/ConfigTables/CSV";
-        public const string DefaultSOScriptOutputFolderPath =
-            ConfigTableGenerationPaths.DefaultGeneratedScriptFolder;
-        public const string DefaultSOAssetOutputFolderPath =
-            ConfigTableGenerationPaths.DefaultTableAssetFolder;
+        public const string DefaultSOScriptOutputFolderPath = ConfigTableGenerationPaths.DefaultGeneratedScriptFolder;
+        public const string DefaultSOAssetOutputFolderPath = ConfigTableGenerationPaths.DefaultTableAssetFolder;
         public const int DefaultDataStartRow = 6;
         public const int DefaultDataStartColumn = 2;
 
@@ -33,8 +31,7 @@ namespace GameFramework.ConfigData.Editor
         private DefaultAsset soAssetOutputFolder;
 
         [SerializeField]
-        private string lastGeneratedScriptOutputFolderPath =
-            DefaultSOScriptOutputFolderPath;
+        private string lastGeneratedScriptOutputFolderPath = DefaultSOScriptOutputFolderPath;
 
         [SerializeField]
         private int dataStartRow = DefaultDataStartRow;
@@ -53,8 +50,6 @@ namespace GameFramework.ConfigData.Editor
             get => csvOutputFolder;
             set => csvOutputFolder = value;
         }
-
-
 
         /// <summary>
         /// 获取或设置配置表数据类及具体 SO 类型脚本的输出目录。

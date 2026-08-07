@@ -10,18 +10,7 @@ namespace GameFramework.ConfigData.Editor
     /// </summary>
     internal static class ConfigValueConverter
     {
-        private static readonly IReadOnlyDictionary<string, ConfigFieldKind> KindByToken =
-            new Dictionary<string, ConfigFieldKind>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["int"] = ConfigFieldKind.Int,
-                ["float"] = ConfigFieldKind.Float,
-                ["bool"] = ConfigFieldKind.Bool,
-                ["string"] = ConfigFieldKind.String,
-                ["List<int>"] = ConfigFieldKind.IntList,
-                ["List<float>"] = ConfigFieldKind.FloatList,
-                ["List<bool>"] = ConfigFieldKind.BoolList,
-                ["List<string>"] = ConfigFieldKind.StringList
-            };
+        private static readonly IReadOnlyDictionary<string, ConfigFieldKind> KindByToken = new Dictionary<string, ConfigFieldKind>(StringComparer.OrdinalIgnoreCase) { ["int"] = ConfigFieldKind.Int, ["float"] = ConfigFieldKind.Float, ["bool"] = ConfigFieldKind.Bool, ["string"] = ConfigFieldKind.String, ["List<int>"] = ConfigFieldKind.IntList, ["List<float>"] = ConfigFieldKind.FloatList, ["List<bool>"] = ConfigFieldKind.BoolList, ["List<string>"] = ConfigFieldKind.StringList };
 
         /// <summary>
         /// 将 #type 单元格转换为受支持的八种字段类型之一。
@@ -238,7 +227,7 @@ namespace GameFramework.ConfigData.Editor
             {
                 case ConfigFieldKind.Int:
                     {
-                        List<int> values = new List<int>(tokens.Length);
+                        List<int> values = new(tokens.Length);
                         if (!TryFillList(tokens, elementKind, values, out error, out warning))
                         {
                             value = values;
@@ -250,7 +239,7 @@ namespace GameFramework.ConfigData.Editor
                     }
                 case ConfigFieldKind.Float:
                     {
-                        List<float> values = new List<float>(tokens.Length);
+                        List<float> values = new(tokens.Length);
                         if (!TryFillList(tokens, elementKind, values, out error, out warning))
                         {
                             value = values;
@@ -262,7 +251,7 @@ namespace GameFramework.ConfigData.Editor
                     }
                 case ConfigFieldKind.Bool:
                     {
-                        List<bool> values = new List<bool>(tokens.Length);
+                        List<bool> values = new(tokens.Length);
                         if (!TryFillList(tokens, elementKind, values, out error, out warning))
                         {
                             value = values;
@@ -274,7 +263,7 @@ namespace GameFramework.ConfigData.Editor
                     }
                 case ConfigFieldKind.String:
                     {
-                        List<string> values = new List<string>(tokens.Length);
+                        List<string> values = new(tokens.Length);
                         if (!TryFillList(tokens, elementKind, values, out error, out warning))
                         {
                             value = values;
@@ -285,10 +274,7 @@ namespace GameFramework.ConfigData.Editor
                         return true;
                     }
                 default:
-                    throw new ArgumentOutOfRangeException(
-                        nameof(elementKind),
-                        elementKind,
-                        null);
+                    throw new ArgumentOutOfRangeException(nameof(elementKind), elementKind, null);
             }
         }
 

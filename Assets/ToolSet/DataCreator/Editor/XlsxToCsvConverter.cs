@@ -14,7 +14,7 @@ namespace GameFramework.ConfigData.Editor
     /// </summary>
     public sealed class XlsxToCsvExportReport
     {
-        private readonly List<string> outputFiles = new List<string>();
+        private readonly List<string> outputFiles = new();
 
         public int WorkbookCount { get; internal set; }
 
@@ -38,14 +38,11 @@ namespace GameFramework.ConfigData.Editor
         private const string SharedStringsPartPath = "xl/sharedStrings.xml";
         private const string StylesPartPath = "xl/styles.xml";
 
-        private static readonly XNamespace SpreadsheetNamespace =
-            "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
+        private static readonly XNamespace SpreadsheetNamespace = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
 
-        private static readonly XNamespace OfficeDocumentRelationshipsNamespace =
-            "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+        private static readonly XNamespace OfficeDocumentRelationshipsNamespace = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 
-        private static readonly XNamespace PackageRelationshipsNamespace =
-            "http://schemas.openxmlformats.org/package/2006/relationships";
+        private static readonly XNamespace PackageRelationshipsNamespace = "http://schemas.openxmlformats.org/package/2006/relationships";
 
         /// <summary>
         /// 转换输入目录中的全部 XLSX 文件。路径既可以是绝对路径，也可以是相对路径。
@@ -60,17 +57,10 @@ namespace GameFramework.ConfigData.Editor
 
             Directory.CreateDirectory(fullOutputDirectory);
 
-            string[] workbookPaths = Directory
-                .EnumerateFiles(fullInputDirectory, "*", searchOption)
-                .Where(path =>
-                    string.Equals(Path.GetExtension(path), ".xlsx", StringComparison.OrdinalIgnoreCase) &&
-                    !Path.GetFileName(path).StartsWith("~$", StringComparison.Ordinal))
-                .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
-                .ToArray();
+            string[] workbookPaths = Directory.EnumerateFiles(fullInputDirectory, "*", searchOption).Where(path => string.Equals(Path.GetExtension(path), ".xlsx", StringComparison.OrdinalIgnoreCase) && !Path.GetFileName(path).StartsWith("~$", StringComparison.Ordinal)).OrderBy(path => path, StringComparer.OrdinalIgnoreCase).ToArray();
 
-            XlsxToCsvExportReport report = new XlsxToCsvExportReport();
-            Dictionary<string, string> outputOwners =
-                new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            XlsxToCsvExportReport report = new();
+            Dictionary<string, string> outputOwners = new(StringComparer.OrdinalIgnoreCase);
 
             foreach (string workbookPath in workbookPaths)
             {
@@ -99,9 +89,8 @@ namespace GameFramework.ConfigData.Editor
 
             Directory.CreateDirectory(fullOutputDirectory);
 
-            XlsxToCsvExportReport report = new XlsxToCsvExportReport();
-            Dictionary<string, string> outputOwners =
-                new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            XlsxToCsvExportReport report = new();
+            Dictionary<string, string> outputOwners = new(StringComparer.OrdinalIgnoreCase);
 
             ConvertWorkbook(fullWorkbookPath, fullOutputDirectory, outputOwners, report);
             report.WorkbookCount = 1;
@@ -114,56 +103,34 @@ namespace GameFramework.ConfigData.Editor
             IDictionary<string, string> outputOwners,
             XlsxToCsvExportReport report)
         {
-            using (FileStream fileStream = new FileStream(
-                       workbookPath,
-                       FileMode.Open,
-                       FileAccess.Read,
-                       FileShare.ReadWrite))
-            using (ZipArchive archive = new ZipArchive(fileStream, ZipArchiveMode.Read))
+            using (FileStream fileStream = new(workbookPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (ZipArchive archive = new(fileStream, ZipArchiveMode.Read))
             {
                 XDocument workbookDocument = LoadRequiredXml(archive, WorkbookPartPath);
-                XDocument relationshipsDocument =
-                    LoadRequiredXml(archive, WorkbookRelationshipsPartPath);
+                XDocument relationshipsDocument = LoadRequiredXml(archive, WorkbookRelationshipsPartPath);
 
-                Dictionary<string, string> worksheetTargets = relationshipsDocument
-                    .Root?
-                    .Elements(PackageRelationshipsNamespace + "Relationship")
-                    .Where(element =>
-                        element.Attribute("Id") != null &&
-                        element.Attribute("Target") != null)
-                    .ToDictionary(
-                        element => element.Attribute("Id")!.Value,
-                        element => element.Attribute("Target")!.Value,
-                        StringComparer.Ordinal)
-                    ?? new Dictionary<string, string>(StringComparer.Ordinal);
+                Dictionary<string, string> worksheetTargets = relationshipsDocument.Root?.Elements(PackageRelationshipsNamespace + "Relationship").Where(element => element.Attribute("Id") != null && element.Attribute("Target") != null).ToDictionary(element => element.Attribute("Id")!.Value, element => element.Attribute("Target")!.Value, StringComparer.Ordinal) ?? new Dictionary<string, string>(StringComparer.Ordinal);
 
                 List<string> sharedStrings = LoadSharedStrings(archive);
                 List<CellStyle> cellStyles = LoadCellStyles(archive);
                 bool usesDate1904 = UsesDate1904System(workbookDocument);
 
-                IEnumerable<XElement> sheets = workbookDocument
-                    .Root?
-                    .Element(SpreadsheetNamespace + "sheets")?
-                    .Elements(SpreadsheetNamespace + "sheet")
-                    ?? Enumerable.Empty<XElement>();
+                IEnumerable<XElement> sheets = workbookDocument.Root?.Element(SpreadsheetNamespace + "sheets")?.Elements(SpreadsheetNamespace + "sheet") ?? Enumerable.Empty<XElement>();
 
                 foreach (XElement sheet in sheets)
                 {
                     string sheetName = sheet.Attribute("name")?.Value;
-                    string relationshipId =
-                        sheet.Attribute(OfficeDocumentRelationshipsNamespace + "id")?.Value;
+                    string relationshipId = sheet.Attribute(OfficeDocumentRelationshipsNamespace + "id")?.Value;
 
                     if (string.IsNullOrWhiteSpace(sheetName) ||
                         string.IsNullOrWhiteSpace(relationshipId))
                     {
-                        throw new InvalidDataException(
-                            $"工作簿“{Path.GetFileName(workbookPath)}”包含无效的工作表定义。");
+                        throw new InvalidDataException($"工作簿“{Path.GetFileName(workbookPath)}”包含无效的工作表定义。");
                     }
 
                     if (!worksheetTargets.TryGetValue(relationshipId, out string worksheetTarget))
                     {
-                        throw new InvalidDataException(
-                            $"找不到工作表“{sheetName}”对应的 XML 文件。");
+                        throw new InvalidDataException($"找不到工作表“{sheetName}”对应的 XML 文件。");
                     }
 
                     string worksheetPartPath = ResolvePartPath("xl", worksheetTarget);
@@ -174,8 +141,7 @@ namespace GameFramework.ConfigData.Editor
 
                     if (outputOwners.TryGetValue(csvPath, out string existingOwner))
                     {
-                        throw new InvalidDataException(
-                            $"CSV 输出名称冲突：“{sheetName}”与“{existingOwner}”都会输出到“{csvPath}”。");
+                        throw new InvalidDataException($"CSV 输出名称冲突：“{sheetName}”与“{existingOwner}”都会输出到“{csvPath}”。");
                     }
 
                     outputOwners.Add(
@@ -202,27 +168,21 @@ namespace GameFramework.ConfigData.Editor
             bool usesDate1904,
             string csvPath)
         {
-            SortedDictionary<int, Dictionary<int, string>> rows =
-                new SortedDictionary<int, Dictionary<int, string>>();
+            SortedDictionary<int, Dictionary<int, string>> rows = new();
 
             int maximumRowIndex = 0;
             int maximumColumnIndex = 0;
             int previousRowIndex = 0;
 
-            IEnumerable<XElement> rowElements = worksheetDocument
-                .Root?
-                .Element(SpreadsheetNamespace + "sheetData")?
-                .Elements(SpreadsheetNamespace + "row")
-                ?? Enumerable.Empty<XElement>();
+            IEnumerable<XElement> rowElements = worksheetDocument.Root?.Element(SpreadsheetNamespace + "sheetData")?.Elements(SpreadsheetNamespace + "row") ?? Enumerable.Empty<XElement>();
 
             foreach (XElement rowElement in rowElements)
             {
-                int rowIndex = ParsePositiveIndex(rowElement.Attribute("r")?.Value)
-                               ?? previousRowIndex + 1;
+                int rowIndex = ParsePositiveIndex(rowElement.Attribute("r")?.Value) ?? previousRowIndex + 1;
 
                 previousRowIndex = rowIndex;
 
-                Dictionary<int, string> cells = new Dictionary<int, string>();
+                Dictionary<int, string> cells = new();
                 int previousColumnIndex = 0;
                 bool rowHasValue = false;
 
@@ -233,11 +193,7 @@ namespace GameFramework.ConfigData.Editor
 
                     previousColumnIndex = columnIndex;
 
-                    string value = GetCellValue(
-                        cellElement,
-                        sharedStrings,
-                        cellStyles,
-                        usesDate1904);
+                    string value = GetCellValue(cellElement, sharedStrings, cellStyles, usesDate1904);
 
                     cells[columnIndex] = value;
                     if (!string.IsNullOrEmpty(value))
@@ -263,14 +219,8 @@ namespace GameFramework.ConfigData.Editor
 
             Directory.CreateDirectory(parentDirectory);
 
-            using (FileStream fileStream = new FileStream(
-                       csvPath,
-                       FileMode.Create,
-                       FileAccess.Write,
-                       FileShare.Read))
-            using (StreamWriter writer = new StreamWriter(
-                       fileStream,
-                       new UTF8Encoding(encoderShouldEmitUTF8Identifier: true)))
+            using (FileStream fileStream = new(csvPath, FileMode.Create, FileAccess.Write, FileShare.Read))
+            using (StreamWriter writer = new(fileStream, new UTF8Encoding(encoderShouldEmitUTF8Identifier: true)))
             {
                 writer.NewLine = "\r\n";
 
@@ -278,10 +228,8 @@ namespace GameFramework.ConfigData.Editor
                 {
                     rows.TryGetValue(rowIndex, out Dictionary<int, string> cells);
 
-                    StringBuilder line = new StringBuilder();
-                    for (int columnIndex = 1;
-                         columnIndex <= maximumColumnIndex;
-                         columnIndex++)
+                    StringBuilder line = new();
+                    for (int columnIndex = 1; columnIndex <= maximumColumnIndex; columnIndex++)
                     {
                         if (columnIndex > 1)
                         {
@@ -315,8 +263,7 @@ namespace GameFramework.ConfigData.Editor
                         .Select(element => element.Value));
             }
 
-            string rawValue =
-                cellElement.Element(SpreadsheetNamespace + "v")?.Value ?? string.Empty;
+            string rawValue = cellElement.Element(SpreadsheetNamespace + "v")?.Value ?? string.Empty;
 
             switch (cellType)
             {
@@ -329,8 +276,7 @@ namespace GameFramework.ConfigData.Editor
                         sharedStringIndex < 0 ||
                         sharedStringIndex >= sharedStrings.Count)
                     {
-                        throw new InvalidDataException(
-                            $"共享字符串索引无效：{rawValue}");
+                        throw new InvalidDataException($"共享字符串索引无效：{rawValue}");
                     }
 
                     return sharedStrings[sharedStringIndex];
@@ -403,30 +349,14 @@ namespace GameFramework.ConfigData.Editor
                 return new List<CellStyle>();
             }
 
-            Dictionary<int, string> customNumberFormats = document
-                .Root
-                .Element(SpreadsheetNamespace + "numFmts")?
-                .Elements(SpreadsheetNamespace + "numFmt")
-                .Where(element =>
-                    ParseNonNegativeIndex(element.Attribute("numFmtId")?.Value).HasValue &&
-                    element.Attribute("formatCode") != null)
-                .ToDictionary(
-                    element =>
-                        ParseNonNegativeIndex(element.Attribute("numFmtId")!.Value)!.Value,
-                    element => element.Attribute("formatCode")!.Value)
-                ?? new Dictionary<int, string>();
+            Dictionary<int, string> customNumberFormats = document.Root.Element(SpreadsheetNamespace + "numFmts")?.Elements(SpreadsheetNamespace + "numFmt").Where(element => ParseNonNegativeIndex(element.Attribute("numFmtId")?.Value).HasValue && element.Attribute("formatCode") != null).ToDictionary(element => ParseNonNegativeIndex(element.Attribute("numFmtId")!.Value)!.Value, element => element.Attribute("formatCode")!.Value) ?? new Dictionary<int, string>();
 
-            IEnumerable<XElement> formatElements = document
-                .Root
-                .Element(SpreadsheetNamespace + "cellXfs")?
-                .Elements(SpreadsheetNamespace + "xf")
-                ?? Enumerable.Empty<XElement>();
+            IEnumerable<XElement> formatElements = document.Root.Element(SpreadsheetNamespace + "cellXfs")?.Elements(SpreadsheetNamespace + "xf") ?? Enumerable.Empty<XElement>();
 
-            List<CellStyle> styles = new List<CellStyle>();
+            List<CellStyle> styles = new();
             foreach (XElement formatElement in formatElements)
             {
-                int numberFormatId =
-                    ParseNonNegativeIndex(formatElement.Attribute("numFmtId")?.Value) ?? 0;
+                int numberFormatId = ParseNonNegativeIndex(formatElement.Attribute("numFmtId")?.Value) ?? 0;
 
                 customNumberFormats.TryGetValue(numberFormatId, out string formatCode);
                 styles.Add(new CellStyle(GetDateCellKind(numberFormatId, formatCode)));
@@ -459,10 +389,8 @@ namespace GameFramework.ConfigData.Editor
             }
 
             string normalizedFormat = RemoveNumberFormatLiterals(formatCode).ToLowerInvariant();
-            bool hasDate = normalizedFormat.IndexOf('y') >= 0 ||
-                           normalizedFormat.IndexOf('d') >= 0;
-            bool hasTime = normalizedFormat.IndexOf('h') >= 0 ||
-                           normalizedFormat.IndexOf('s') >= 0;
+            bool hasDate = normalizedFormat.IndexOf('y') >= 0 || normalizedFormat.IndexOf('d') >= 0;
+            bool hasTime = normalizedFormat.IndexOf('h') >= 0 || normalizedFormat.IndexOf('s') >= 0;
 
             if (hasDate && hasTime)
             {
@@ -479,7 +407,7 @@ namespace GameFramework.ConfigData.Editor
 
         private static string RemoveNumberFormatLiterals(string formatCode)
         {
-            StringBuilder result = new StringBuilder(formatCode.Length);
+            StringBuilder result = new(formatCode.Length);
             bool insideQuotes = false;
 
             for (int index = 0; index < formatCode.Length; index++)
@@ -509,9 +437,7 @@ namespace GameFramework.ConfigData.Editor
                     int closingBracketIndex = formatCode.IndexOf(']', index + 1);
                     if (closingBracketIndex >= 0)
                     {
-                        string bracketContent = formatCode
-                            .Substring(index + 1, closingBracketIndex - index - 1)
-                            .ToLowerInvariant();
+                        string bracketContent = formatCode.Substring(index + 1, closingBracketIndex - index - 1).ToLowerInvariant();
 
                         if (bracketContent == "h" ||
                             bracketContent == "hh" ||
@@ -536,11 +462,7 @@ namespace GameFramework.ConfigData.Editor
 
         private static bool UsesDate1904System(XDocument workbookDocument)
         {
-            string value = workbookDocument
-                .Root?
-                .Element(SpreadsheetNamespace + "workbookPr")?
-                .Attribute("date1904")?
-                .Value;
+            string value = workbookDocument.Root?.Element(SpreadsheetNamespace + "workbookPr")?.Attribute("date1904")?.Value;
 
             return value == "1" ||
                    string.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
@@ -553,11 +475,7 @@ namespace GameFramework.ConfigData.Editor
                 return string.Empty;
             }
 
-            bool requiresQuotes =
-                value.IndexOf(',') >= 0 ||
-                value.IndexOf('"') >= 0 ||
-                value.IndexOf('\r') >= 0 ||
-                value.IndexOf('\n') >= 0;
+            bool requiresQuotes = value.IndexOf(',') >= 0 || value.IndexOf('"') >= 0 || value.IndexOf('\r') >= 0 || value.IndexOf('\n') >= 0;
 
             if (!requiresQuotes)
             {
@@ -569,10 +487,9 @@ namespace GameFramework.ConfigData.Editor
 
         private static string SanitizeFileName(string fileName)
         {
-            HashSet<char> invalidCharacters =
-                new HashSet<char>(Path.GetInvalidFileNameChars());
+            HashSet<char> invalidCharacters = new(Path.GetInvalidFileNameChars());
 
-            StringBuilder sanitized = new StringBuilder(fileName.Length);
+            StringBuilder sanitized = new(fileName.Length);
             foreach (char character in fileName)
             {
                 sanitized.Append(invalidCharacters.Contains(character) ? '_' : character);
@@ -650,11 +567,7 @@ namespace GameFramework.ConfigData.Editor
         private static XDocument LoadOptionalXml(ZipArchive archive, string partPath)
         {
             string normalizedPartPath = partPath.Replace('\\', '/').TrimStart('/');
-            ZipArchiveEntry entry = archive.Entries.FirstOrDefault(candidate =>
-                string.Equals(
-                    candidate.FullName.Replace('\\', '/'),
-                    normalizedPartPath,
-                    StringComparison.OrdinalIgnoreCase));
+            ZipArchiveEntry entry = archive.Entries.FirstOrDefault(candidate => string.Equals(candidate.FullName.Replace('\\', '/'), normalizedPartPath, StringComparison.OrdinalIgnoreCase));
 
             if (entry == null)
             {
@@ -675,11 +588,9 @@ namespace GameFramework.ConfigData.Editor
             }
 
             string normalizedTarget = target.Replace('\\', '/');
-            string combined = normalizedTarget.StartsWith("/", StringComparison.Ordinal)
-                ? normalizedTarget.TrimStart('/')
-                : basePartDirectory.TrimEnd('/') + "/" + normalizedTarget;
+            string combined = normalizedTarget.StartsWith("/", StringComparison.Ordinal) ? normalizedTarget.TrimStart('/') : basePartDirectory.TrimEnd('/') + "/" + normalizedTarget;
 
-            Stack<string> segments = new Stack<string>();
+            Stack<string> segments = new();
             foreach (string segment in combined.Split('/'))
             {
                 if (string.IsNullOrEmpty(segment) || segment == ".")
@@ -691,8 +602,7 @@ namespace GameFramework.ConfigData.Editor
                 {
                     if (segments.Count == 0)
                     {
-                        throw new InvalidDataException(
-                            $"XLSX 关系目标路径越界：{target}");
+                        throw new InvalidDataException($"XLSX 关系目标路径越界：{target}");
                     }
 
                     segments.Pop();

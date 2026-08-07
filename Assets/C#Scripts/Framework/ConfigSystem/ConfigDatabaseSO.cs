@@ -5,11 +5,8 @@ using UnityEngine;
 namespace GameFramework.ConfigSystem
 {
     /// <summary>
-    /// 配置数据的统一入口资产，保存所有配置表 SO 的引用。
+    /// 所有配置数据的统一入口资产，保存所有配置表 SO 的引用。
     /// </summary>
-    [CreateAssetMenu(
-        fileName = "ConfigDatabase",
-        menuName = "GameFramework/Config Data/Config Database")]
     public sealed class ConfigDatabaseSO : ScriptableObject
     {
         [SerializeField]
@@ -47,24 +44,19 @@ namespace GameFramework.ConfigSystem
                     ConfigTableSOBase table = tables[index];
                     if (table == null)
                     {
-                        throw new InvalidOperationException(
-                            $"配置数据库“{name}”中索引为 {index} 的配置表为空。");
+                        throw new InvalidOperationException($"配置数据库“{name}”中索引为 {index} 的配置表为空。");
                     }
 
                     Type tableType = table.GetType();
                     if (!tableByType.TryAdd(tableType, table))
                     {
-                        throw new InvalidOperationException(
-                            $"配置数据库“{name}”中存在重复的配置表类型：" +
-                            $"“{tableType.FullName}”。");
+                        throw new InvalidOperationException($"配置数据库“{name}”中存在重复的配置表类型：" + $"“{tableType.FullName}”。");
                     }
 
                     Type dataType = table.DataType;
                     if (!tableByDataType.TryAdd(dataType, table))
                     {
-                        throw new InvalidOperationException(
-                            $"配置数据库“{name}”中存在多个数据类型为" +
-                            $"“{dataType.FullName}”的配置表。");
+                        throw new InvalidOperationException($"配置数据库“{name}”中存在多个数据类型为" + $"“{dataType.FullName}”的配置表。");
                     }
 
                     table.Initialize();
@@ -102,8 +94,7 @@ namespace GameFramework.ConfigSystem
                 return table;
             }
 
-            throw new KeyNotFoundException(
-                $"配置数据库“{name}”中不存在配置表“{typeof(TTable).FullName}”。");
+            throw new KeyNotFoundException($"配置数据库“{name}”中不存在配置表“{typeof(TTable).FullName}”。");
         }
 
         public bool TryGetTableByData<TData>(out ConfigTableSO<TData> table)
@@ -131,9 +122,7 @@ namespace GameFramework.ConfigSystem
                 return table;
             }
 
-            throw new KeyNotFoundException(
-                $"配置数据库“{name}”中不存在数据类型" +
-                $"“{typeof(TData).FullName}”。");
+            throw new KeyNotFoundException($"配置数据库“{name}”中不存在数据类型" + $"“{typeof(TData).FullName}”。");
         }
 
         public void Release()
@@ -160,8 +149,7 @@ namespace GameFramework.ConfigSystem
         {
             if (!isInitialized)
             {
-                throw new InvalidOperationException(
-                    $"配置数据库“{name}”尚未初始化。");
+                throw new InvalidOperationException($"配置数据库“{name}”尚未初始化。");
             }
         }
     }

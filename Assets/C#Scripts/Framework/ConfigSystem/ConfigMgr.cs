@@ -33,10 +33,7 @@ namespace GameFramework.ConfigSystem
 
             if (loadedDatabase == null)
             {
-                throw new InvalidOperationException(
-                    "未能从 Resources 路径" +
-                    $"“{DefaultDatabaseResourcesPath}”加载配置数据库。" +
-                    "预期资产路径为“Assets/Resources/ConfigData/ConfigDatabase.asset”。");
+                throw new InvalidOperationException("未能从 Resources 路径" + $"“{DefaultDatabaseResourcesPath}”加载配置数据库。" + "预期资产路径为“Assets/Resources/ConfigData/ConfigDatabase.asset”。");
             }
 
             Initialize(loadedDatabase);
@@ -156,9 +153,7 @@ namespace GameFramework.ConfigSystem
         {
             if (!isInitialized)
             {
-                throw new InvalidOperationException(
-                    "ConfigMgr 尚未初始化，请在项目启动流程中调用 " +
-                    "ConfigMgr.Instance.OnInit()。");
+                throw new InvalidOperationException("ConfigMgr 尚未初始化，请在项目启动流程中调用 " + "ConfigMgr.Instance.OnInit()。");
             }
         }
     }

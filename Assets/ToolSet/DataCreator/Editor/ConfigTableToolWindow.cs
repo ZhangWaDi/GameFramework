@@ -13,8 +13,7 @@ namespace GameFramework.ConfigData.Editor
         private const float OpenFolderButtonWidth = 48f;
         private const float FolderFieldSpacing = 4f;
 
-        private static readonly GUIContent LocateFolderButtonContent =
-            new GUIContent("定位", "在 Unity Project 窗口中显示该目录");
+        private static readonly GUIContent LocateFolderButtonContent = new("定位", "在 Unity Project 窗口中显示该目录");
 
         private ConfigTableToolSettings settings;
 
@@ -59,32 +58,21 @@ namespace GameFramework.ConfigData.Editor
             EditorGUILayout.LabelField("CSV 生成配置 SO", EditorStyles.boldLabel);
             EditorGUILayout.Space(5f);
 
-            DefaultAsset soScriptOutputFolder = DrawFolderField(
-                "SO 脚本输出目录",
-                settings.SOScriptOutputFolder);
+            DefaultAsset soScriptOutputFolder = DrawFolderField("SO 脚本输出目录", settings.SOScriptOutputFolder);
             DrawAssetPath(soScriptOutputFolder);
 
-            DefaultAsset soAssetOutputFolder = DrawFolderField(
-                "SO 资产输出目录",
-                settings.SOAssetOutputFolder);
+            DefaultAsset soAssetOutputFolder = DrawFolderField("SO 资产输出目录", settings.SOAssetOutputFolder);
             DrawAssetPath(soAssetOutputFolder);
 
             EditorGUILayout.Space(5f);
 
-            int dataStartRow = Mathf.Max(
-                1,
-                EditorGUILayout.IntField(
-                    "数据开始行",
-                    settings.DataStartRow));
-            int dataStartColumn = Mathf.Max(
-                1,
-                EditorGUILayout.IntField(
-                    "数据开始列",
-                    settings.DataStartColumn));
+            int dataStartRow = Mathf.Max(1, EditorGUILayout.IntField("数据开始行", settings.DataStartRow));
+            int dataStartColumn = Mathf.Max(1, EditorGUILayout.IntField("数据开始列", settings.DataStartColumn));
 
             EditorGUILayout.HelpBox(
                 "行列坐标从 1 开始，当前默认从第 6 行、第 2 列读取正式配置数据。" +
                 "第一列仅作为行描述时不会写入 SO。\n" +
+                "#check 支持 NonEmpty 和 Unique，多个标签可用逗号、空格、分号或 | 分隔。\n" +
                 "SO 脚本目录用于生成数据类和 XXXSO.cs，不能选择 Editor 目录；" +
                 "SO 资产目录用于生成 XXXSO.asset。\n" +
                 "ConfigDatabase 固定生成到 Assets/Resources/ConfigData，" +
@@ -109,9 +97,7 @@ namespace GameFramework.ConfigData.Editor
 
             GUILayout.FlexibleSpace();
 
-            bool canExport =
-                IsValidFolder(settings.XLSXInputFolder) &&
-                IsValidFolder(settings.CSVOutputFolder);
+            bool canExport = IsValidFolder(settings.XLSXInputFolder) && IsValidFolder(settings.CSVOutputFolder);
 
             using (new EditorGUI.DisabledScope(!canExport))
             {
@@ -193,9 +179,7 @@ namespace GameFramework.ConfigData.Editor
         /// </summary>
         private static void DrawAssetPath(DefaultAsset folder)
         {
-            string path = folder == null
-                ? "未选择"
-                : AssetDatabase.GetAssetPath(folder);
+            string path = folder == null ? "未选择" : AssetDatabase.GetAssetPath(folder);
 
             using (new EditorGUILayout.HorizontalScope())
             {
@@ -241,23 +225,16 @@ namespace GameFramework.ConfigData.Editor
             string inputAssetPath = AssetDatabase.GetAssetPath(settings.XLSXInputFolder);
             string outputAssetPath = AssetDatabase.GetAssetPath(settings.CSVOutputFolder);
             string projectRoot = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
-            string inputDirectory = Path.GetFullPath(
-                Path.Combine(projectRoot, inputAssetPath));
-            string outputDirectory = Path.GetFullPath(
-                Path.Combine(projectRoot, outputAssetPath));
+            string inputDirectory = Path.GetFullPath(Path.Combine(projectRoot, inputAssetPath));
+            string outputDirectory = Path.GetFullPath(Path.Combine(projectRoot, outputAssetPath));
 
             try
             {
-                XlsxToCsvExportReport report = XlsxToCsvConverter.ConvertDirectory(
-                    inputDirectory,
-                    outputDirectory);
+                XlsxToCsvExportReport report = ConfigTableExportPipeline.ExportDirectory(inputDirectory, outputDirectory, settings.DataStartRow, settings.DataStartColumn);
 
                 AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
 
-                string message =
-                    $"工作簿：{report.WorkbookCount}\n" +
-                    $"CSV：{report.WorksheetCount}\n" +
-                    $"输出目录：{outputAssetPath}";
+                string message = $"工作簿：{report.WorkbookCount}\n" + $"CSV：{report.WorksheetCount}\n" + $"输出目录：{outputAssetPath}";
 
                 Debug.Log($"[配置表导出完成] {message.Replace(Environment.NewLine, "，")}");
                 EditorUtility.DisplayDialog("配置表导出完成", message, "确定");
@@ -282,8 +259,7 @@ namespace GameFramework.ConfigData.Editor
 
             try
             {
-                ConfigTableGenerationReport report =
-                    ConfigTableGenerationPipeline.Run(settings);
+                ConfigTableGenerationReport report = ConfigTableGenerationPipeline.Run(settings);
                 string message = report.ToDisplayMessage();
 
                 Debug.Log(

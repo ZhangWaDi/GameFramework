@@ -118,10 +118,7 @@ namespace GameFramework.ConfigData.Editor
                 throw new ArgumentException("CSV 文件路径不能为空。", nameof(filePath));
             }
 
-            using StreamReader reader = new StreamReader(
-                filePath,
-                Encoding.UTF8,
-                detectEncodingFromByteOrderMarks: true);
+            using StreamReader reader = new(filePath, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
 
             return Parse(reader.ReadToEnd(), filePath);
         }
@@ -142,9 +139,9 @@ namespace GameFramework.ConfigData.Editor
                 text = text.Substring(1);
             }
 
-            List<CsvRecord> records = new List<CsvRecord>();
-            List<CsvCell> cells = new List<CsvCell>();
-            StringBuilder field = new StringBuilder();
+            List<CsvRecord> records = new();
+            List<CsvCell> cells = new();
+            StringBuilder field = new();
 
             int physicalRow = 1;
             int physicalColumn = 1;
@@ -233,22 +230,14 @@ namespace GameFramework.ConfigData.Editor
                         continue;
                     }
 
-                    throw CreateParseException(
-                        sourcePath,
-                        physicalRow,
-                        physicalColumn,
-                        "结束引号后只能出现逗号、换行或文件结尾。");
+                    throw CreateParseException(sourcePath, physicalRow, physicalColumn, "结束引号后只能出现逗号、换行或文件结尾。");
                 }
 
                 if (character == '"')
                 {
                     if (field.Length > 0)
                     {
-                        throw CreateParseException(
-                            sourcePath,
-                            physicalRow,
-                            physicalColumn,
-                            "未加引号字段中不能直接出现双引号。");
+                        throw CreateParseException(sourcePath, physicalRow, physicalColumn, "未加引号字段中不能直接出现双引号。");
                     }
 
                     inQuotes = true;
@@ -298,11 +287,7 @@ namespace GameFramework.ConfigData.Editor
 
             if (inQuotes)
             {
-                throw CreateParseException(
-                    sourcePath,
-                    fieldStartRow,
-                    fieldStartColumn,
-                    "引号字段在文件结束前没有闭合。");
+                throw CreateParseException(sourcePath, fieldStartRow, fieldStartColumn, "引号字段在文件结束前没有闭合。");
             }
 
             if (closedQuotedField ||

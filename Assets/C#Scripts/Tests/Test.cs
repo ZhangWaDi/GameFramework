@@ -1,4 +1,6 @@
 using System;
+using GameFramework.ConfigData.Generated;
+using GameFramework.ConfigSystem;
 using GameFramework.EventSystem;
 using UnityEngine;
 
@@ -12,17 +14,18 @@ public sealed class Test : MonoBehaviour
 
     void Start()
     {
-        EventCenter.Instance.AddEventListener(TestEvent.AAA, 无参事件);
-        EventCenter.Instance.AddEventListener<int, int>(TestEvent.AAA, 有参事件);
-
-
-        EventCenter.Instance.EventTrigger(TestEvent.AAA);
-        EventCenter.Instance.EventTrigger<int>(TestEvent.AAA, 100);
+        ConfigMgr.Instance.OnInit();
+        TestOneData config = ConfigMgr.Instance.GetConfig<TestOneData>(1);
+        Debug.Log(config);
+        // EventCenter.Instance.AddEventListener(TestEvent.AAA, 无参事件);
+        // EventCenter.Instance.AddEventListener<int, int>(TestEvent.AAA, 有参事件);
+        // EventCenter.Instance.EventTrigger(TestEvent.AAA);
+        // EventCenter.Instance.EventTrigger<int>(TestEvent.AAA, 100);
 
     }
 
 
-    void 无参事件()
+    private void 无参事件()
     {
         Debug.Log("无参事件触发");
     }

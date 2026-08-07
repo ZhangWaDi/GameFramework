@@ -75,11 +75,10 @@ namespace GameFramework.ConfigSystem
     /// 具体配置表只需要继承当前泛型类，无需重复实现查询逻辑。
     /// </summary>
     /// <typeparam name="TData">当前配置表保存的数据类型。</typeparam>
-    public abstract class ConfigTableSO<TData> : ConfigTableSOBase
-        where TData : ConfigDataBase
+    public abstract class ConfigTableSO<TData> : ConfigTableSOBase where TData : ConfigDataBase
     {
         [SerializeField]
-        private List<TData> dataList = new List<TData>();
+        private List<TData> dataList = new();
 
         [NonSerialized]
         private Dictionary<int, TData> dataById;
@@ -116,7 +115,8 @@ namespace GameFramework.ConfigSystem
         }
 
         /// <summary>
-        /// 通过 ID 获取一行配置数据；ID 不存在时抛出 KeyNotFoundException。
+        /// 通过 ID 获取一行配置数据。
+        /// ID 不存在时抛出 KeyNotFoundException。
         /// </summary>
         public TData GetData(int id)
         {
@@ -125,8 +125,7 @@ namespace GameFramework.ConfigSystem
                 return data;
             }
 
-            throw new KeyNotFoundException(
-                $"配置表“{name}”中不存在 ID 为 {id} 的 {typeof(TData).Name} 数据。");
+            throw new KeyNotFoundException($"配置表“{name}”中不存在 ID 为 {id} 的 {typeof(TData).Name} 数据。");
         }
 
         /// <summary>
@@ -142,14 +141,12 @@ namespace GameFramework.ConfigSystem
                 TData data = dataList[index];
                 if (data == null)
                 {
-                    throw new InvalidOperationException(
-                        $"配置表“{name}”中索引为 {index} 的数据为空。");
+                    throw new InvalidOperationException($"配置表“{name}”中索引为 {index} 的数据为空。");
                 }
 
                 if (!dataById.TryAdd(data.ID, data))
                 {
-                    throw new InvalidOperationException(
-                        $"配置表“{name}”中存在重复 ID：{data.ID}。");
+                    throw new InvalidOperationException($"配置表“{name}”中存在重复 ID：{data.ID}。");
                 }
 
                 dataIds.Add(data.ID);
@@ -169,8 +166,7 @@ namespace GameFramework.ConfigSystem
         {
             if (!IsInitialized)
             {
-                throw new InvalidOperationException(
-                    $"配置表“{name}”尚未初始化。");
+                throw new InvalidOperationException($"配置表“{name}”尚未初始化。");
             }
         }
     }

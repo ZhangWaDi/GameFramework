@@ -1,8 +1,8 @@
 ﻿#var,ID,TestString,TestFloat,TestBool,TestComma
 #type,int,string,float,bool,string
 #desc,Id导出测试,字符串导出测试,浮点数导出测试,布尔值导出测试,英文逗号分隔测试
-#check,"Nonempty,Unique",,,,
+#check,"NonEmpty,Unique",,,,
 #default,,,,TRUE,默认字符串
-#测试row1,10001,测试名1,1f,TRUE,"测试描述1,英文逗号分隔"
-#测试row2,10002,测试名2,1.1f,FALSE,"测试描述2,英文逗号分隔"
+#测试row1,10001,测试名1,1,TRUE,"测试描述1,英文逗号分隔"
+#测试row2,10002,测试名2,1.1000000000000001,FALSE,"测试描述2,英文逗号分隔"
 #测试row3,10003,测试名3,,,

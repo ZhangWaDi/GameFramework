@@ -9,7 +9,7 @@ namespace GameFramework
     /// <typeparam name="T">继承当前基类的具体单例类型。</typeparam>
     public abstract class Singleton<T> where T : Singleton<T>, new()
     {
-        private static readonly object SyncRoot = new object();
+        private static readonly object SyncRoot = new();
         private static T instance;
 
         /// <summary>
@@ -125,7 +125,7 @@ namespace GameFramework
                     return instance;
                 }
 
-                GameObject singletonObject = new GameObject(typeof(T).Name);
+                GameObject singletonObject = new(typeof(T).Name);
                 instance = singletonObject.AddComponent<T>();
                 return instance;
             }

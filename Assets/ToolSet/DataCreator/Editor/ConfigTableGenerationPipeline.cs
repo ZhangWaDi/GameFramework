@@ -29,57 +29,37 @@ namespace GameFramework.ConfigData.Editor
 
             settings.EnsureDefaults();
 
-            string csvAssetFolder = AssetDatabase.GetAssetPath(
-                settings.CSVOutputFolder);
+            string csvAssetFolder = AssetDatabase.GetAssetPath(settings.CSVOutputFolder);
             if (string.IsNullOrEmpty(csvAssetFolder) ||
                 !AssetDatabase.IsValidFolder(csvAssetFolder))
             {
-                throw new InvalidOperationException(
-                    "CSV 输出目录无效，请在配置表工具窗口中重新选择。");
+                throw new InvalidOperationException("CSV 输出目录无效，请在配置表工具窗口中重新选择。");
             }
 
             string csvDirectory = GetAbsoluteProjectPath(csvAssetFolder);
-            string scriptAssetFolder = AssetDatabase.GetAssetPath(
-                settings.SOScriptOutputFolder);
+            string scriptAssetFolder = AssetDatabase.GetAssetPath(settings.SOScriptOutputFolder);
             ValidateAssetFolder(
                 scriptAssetFolder,
                 "SO 脚本输出目录");
             if (ContainsEditorFolder(scriptAssetFolder))
             {
-                throw new InvalidOperationException(
-                    "SO 脚本输出目录不能位于 Editor 文件夹中。" +
-                    "生成的数据类和 SO 类型需要编译到运行时程序集。");
+                throw new InvalidOperationException("SO 脚本输出目录不能位于 Editor 文件夹中。" + "生成的数据类和 SO 类型需要编译到运行时程序集。");
             }
 
-            string soAssetFolder = AssetDatabase.GetAssetPath(
-                settings.SOAssetOutputFolder);
+            string soAssetFolder = AssetDatabase.GetAssetPath(settings.SOAssetOutputFolder);
             ValidateAssetFolder(
                 soAssetFolder,
                 "SO 资产输出目录");
 
-            string[] csvFiles = Directory
-                .EnumerateFiles(csvDirectory, "*", SearchOption.TopDirectoryOnly)
-                .Where(path => string.Equals(
-                    Path.GetExtension(path),
-                    ".csv",
-                    StringComparison.OrdinalIgnoreCase))
-                .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
-                .ToArray();
+            string[] csvFiles = Directory.EnumerateFiles(csvDirectory, "*", SearchOption.TopDirectoryOnly).Where(path => string.Equals(Path.GetExtension(path), ".csv", StringComparison.OrdinalIgnoreCase)).OrderBy(path => path, StringComparer.OrdinalIgnoreCase).ToArray();
 
             if (csvFiles.Length == 0)
             {
-                throw new InvalidOperationException(
-                    $"CSV 目录“{csvAssetFolder}”中没有可处理的 .csv 文件。");
+                throw new InvalidOperationException($"CSV 目录“{csvAssetFolder}”中没有可处理的 .csv 文件。");
             }
 
-            List<ConfigTableDiagnostic> diagnostics =
-                new List<ConfigTableDiagnostic>();
-            List<ConfigTableDefinition> definitions =
-                ParseDefinitions(
-                    csvFiles,
-                    settings.DataStartRow,
-                    settings.DataStartColumn,
-                    diagnostics);
+            List<ConfigTableDiagnostic> diagnostics = new();
+            List<ConfigTableDefinition> definitions = ParseDefinitions(csvFiles, settings.DataStartRow, settings.DataStartColumn, diagnostics);
 
             ValidateUniqueTableNames(definitions, diagnostics);
             LogDiagnostics(diagnostics);
@@ -88,31 +68,14 @@ namespace GameFramework.ConfigData.Editor
                     item.Severity == ConfigDiagnosticSeverity.Error))
             {
                 SessionState.EraseBool(PendingBuildSessionKey);
-                throw new ConfigTableValidationException(
-                    "配置表校验失败，未生成代码或 SO。",
-                    diagnostics);
+                throw new ConfigTableValidationException("配置表校验失败，未生成代码或 SO。", diagnostics);
             }
 
-            bool scriptsChanged = ConfigTableCodeGenerator.Generate(
-                definitions,
-                scriptAssetFolder,
-                settings.LastGeneratedScriptOutputFolderPath,
-                out int scriptCount);
+            bool scriptsChanged = ConfigTableCodeGenerator.Generate(definitions, scriptAssetFolder, settings.LastGeneratedScriptOutputFolderPath, out int scriptCount);
             settings.LastGeneratedScriptOutputFolderPath = scriptAssetFolder;
             settings.SaveSettings();
 
-            ConfigTableGenerationReport report =
-                new ConfigTableGenerationReport
-                {
-                    TableCount = definitions.Count,
-                    DataRowCount = definitions.Sum(item => item.Rows.Count),
-                    WarningCount = diagnostics.Count(item =>
-                        item.Severity == ConfigDiagnosticSeverity.Warning),
-                    GeneratedScriptCount = scriptCount,
-                    ScriptsChanged = scriptsChanged,
-                    ScriptOutputFolder = scriptAssetFolder,
-                    SOAssetOutputFolder = soAssetFolder
-                };
+            ConfigTableGenerationReport report = new() { TableCount = definitions.Count, DataRowCount = definitions.Sum(item => item.Rows.Count), WarningCount = diagnostics.Count(item => item.Severity == ConfigDiagnosticSeverity.Warning), GeneratedScriptCount = scriptCount, ScriptsChanged = scriptsChanged, ScriptOutputFolder = scriptAssetFolder, SOAssetOutputFolder = soAssetFolder };
 
             if (scriptsChanged)
             {
@@ -161,20 +124,14 @@ namespace GameFramework.ConfigData.Editor
             int dataStartColumn,
             ICollection<ConfigTableDiagnostic> diagnostics)
         {
-            List<ConfigTableDefinition> definitions =
-                new List<ConfigTableDefinition>();
+            List<ConfigTableDefinition> definitions = new();
 
             foreach (string csvFile in csvFiles)
             {
                 try
                 {
                     CsvDocument document = StandardCsvParser.ParseFile(csvFile);
-                    ConfigTableDefinition definition =
-                        ConfigTableSchemaParser.Parse(
-                            document,
-                            dataStartRow,
-                            dataStartColumn,
-                            diagnostics);
+                    ConfigTableDefinition definition = ConfigTableSchemaParser.Parse(document, dataStartRow, dataStartColumn, diagnostics);
 
                     if (definition != null)
                     {
@@ -208,11 +165,7 @@ namespace GameFramework.ConfigData.Editor
             IReadOnlyList<ConfigTableDefinition> definitions,
             ICollection<ConfigTableDiagnostic> diagnostics)
         {
-            foreach (IGrouping<string, ConfigTableDefinition> group in definitions
-                         .GroupBy(
-                             item => item.Schema.TableName,
-                             StringComparer.OrdinalIgnoreCase)
-                         .Where(item => item.Count() > 1))
+            foreach (IGrouping<string, ConfigTableDefinition> group in definitions.GroupBy(item => item.Schema.TableName, StringComparer.OrdinalIgnoreCase).Where(item => item.Count() > 1))
             {
                 foreach (ConfigTableDefinition definition in group)
                 {
@@ -256,8 +209,7 @@ namespace GameFramework.ConfigData.Editor
             if (string.IsNullOrEmpty(assetFolder) ||
                 !AssetDatabase.IsValidFolder(assetFolder))
             {
-                throw new InvalidOperationException(
-                    $"{displayName}无效，请在配置表工具窗口中重新选择。");
+                throw new InvalidOperationException($"{displayName}无效，请在配置表工具窗口中重新选择。");
             }
 
             if (!string.Equals(
@@ -268,8 +220,7 @@ namespace GameFramework.ConfigData.Editor
                     "Assets/",
                     StringComparison.Ordinal))
             {
-                throw new InvalidOperationException(
-                    $"{displayName}必须位于项目 Assets 目录下：{assetFolder}");
+                throw new InvalidOperationException($"{displayName}必须位于项目 Assets 目录下：{assetFolder}");
             }
         }
 
@@ -295,8 +246,7 @@ namespace GameFramework.ConfigData.Editor
         {
             AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
 
-            DefaultAsset folder = AssetDatabase.LoadAssetAtPath<DefaultAsset>(
-                assetFolder);
+            DefaultAsset folder = AssetDatabase.LoadAssetAtPath<DefaultAsset>(assetFolder);
             if (folder == null)
             {
                 Debug.LogWarning(
@@ -311,8 +261,7 @@ namespace GameFramework.ConfigData.Editor
 
         private static string GetAbsoluteProjectPath(string assetPath)
         {
-            string projectRoot = Path.GetFullPath(
-                Path.Combine(Application.dataPath, ".."));
+            string projectRoot = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
             return Path.GetFullPath(Path.Combine(projectRoot, assetPath));
         }
     }

@@ -122,12 +122,8 @@ namespace GameFramework
             string callerFilePath,
             string callerMemberName)
         {
-            string sourceName = string.IsNullOrEmpty(callerFilePath)
-                ? "UnknownSource"
-                : Path.GetFileNameWithoutExtension(callerFilePath);
-            string memberName = string.IsNullOrEmpty(callerMemberName)
-                ? "UnknownMember"
-                : callerMemberName;
+            string sourceName = string.IsNullOrEmpty(callerFilePath) ? "UnknownSource" : Path.GetFileNameWithoutExtension(callerFilePath);
+            string memberName = string.IsNullOrEmpty(callerMemberName) ? "UnknownMember" : callerMemberName;
 
             return $"[{sourceName}.{memberName}] {message}";
         }

@@ -16,11 +16,7 @@ namespace GameFramework.ConfigData.Editor
     /// </summary>
     internal static class ConfigTableAssetBuilder
     {
-        private const BindingFlags DeclaredInstanceFlags =
-            BindingFlags.Instance |
-            BindingFlags.Public |
-            BindingFlags.NonPublic |
-            BindingFlags.DeclaredOnly;
+        private const BindingFlags DeclaredInstanceFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
 
         /// <summary>
         /// 原子化构建全部表资产。
@@ -36,20 +32,15 @@ namespace GameFramework.ConfigData.Editor
                 throw new ArgumentNullException(nameof(definitions));
             }
 
-            string normalizedTableAssetFolder =
-                NormalizeAssetFolderPath(tableAssetFolder);
+            string normalizedTableAssetFolder = NormalizeAssetFolderPath(tableAssetFolder);
             EnsureAssetFolder(normalizedTableAssetFolder);
             EnsureAssetFolder(GetParentAssetPath(
                 ConfigTableGenerationPaths.DatabaseAssetPath));
 
-            List<PreparedTable> preparedTables = definitions
-                .Select(definition => PrepareTable(
-                    definition,
-                    normalizedTableAssetFolder))
-                .ToList();
+            List<PreparedTable> preparedTables = definitions.Select(definition => PrepareTable(definition, normalizedTableAssetFolder)).ToList();
 
-            List<string> createdAssetPaths = new List<string>();
-            List<AssetBackup> backups = new List<AssetBackup>();
+            List<string> createdAssetPaths = new();
+            List<AssetBackup> backups = new();
             ConfigDatabaseSO database = null;
             List<ConfigTableSOBase> databaseBackup = null;
             bool databaseWasCreated = false;
@@ -93,13 +84,10 @@ namespace GameFramework.ConfigData.Editor
                     ConfigTableGenerationPaths.DatabaseAssetPath);
                 if (database == null)
                 {
-                    Object existing = AssetDatabase.LoadMainAssetAtPath(
-                        ConfigTableGenerationPaths.DatabaseAssetPath);
+                    Object existing = AssetDatabase.LoadMainAssetAtPath(ConfigTableGenerationPaths.DatabaseAssetPath);
                     if (existing != null)
                     {
-                        throw new InvalidOperationException(
-                            $"路径“{ConfigTableGenerationPaths.DatabaseAssetPath}”" +
-                            $"已存在类型为“{existing.GetType().FullName}”的非配置数据库资产。");
+                        throw new InvalidOperationException($"路径“{ConfigTableGenerationPaths.DatabaseAssetPath}”" + $"已存在类型为“{existing.GetType().FullName}”的非配置数据库资产。");
                     }
 
                     database = ScriptableObject.CreateInstance<ConfigDatabaseSO>();
@@ -112,9 +100,7 @@ namespace GameFramework.ConfigData.Editor
                     databaseWasCreated = true;
                 }
 
-                FieldInfo tablesField = FindField(
-                    typeof(ConfigDatabaseSO),
-                    "tables");
+                FieldInfo tablesField = FindField(typeof(ConfigDatabaseSO), "tables");
                 if (!databaseWasCreated)
                 {
                     databaseBackup = new List<ConfigTableSOBase>(
@@ -122,9 +108,7 @@ namespace GameFramework.ConfigData.Editor
                 }
 
                 database.Release();
-                List<ConfigTableSOBase> tableAssets = preparedTables
-                    .Select(item => item.ResultAsset)
-                    .ToList();
+                List<ConfigTableSOBase> tableAssets = preparedTables.Select(item => item.ResultAsset).ToList();
                 tablesField.SetValue(database, tableAssets);
 
                 // 数据库初始化可验证表类型和数据类型是否重复。
@@ -134,9 +118,7 @@ namespace GameFramework.ConfigData.Editor
 
                 AssetDatabase.SaveAssets();
 
-                List<string> result = preparedTables
-                    .Select(item => item.AssetPath)
-                    .ToList();
+                List<string> result = preparedTables.Select(item => item.AssetPath).ToList();
                 result.Add(ConfigTableGenerationPaths.DatabaseAssetPath);
                 return result;
             }
@@ -165,9 +147,7 @@ namespace GameFramework.ConfigData.Editor
 
             if (dataType == null || tableType == null)
             {
-                throw new InvalidOperationException(
-                    $"尚未加载配置表“{schema.TableName}”的生成类型。" +
-                    "请确认 Unity 脚本编译已成功完成。");
+                throw new InvalidOperationException($"尚未加载配置表“{schema.TableName}”的生成类型。" + "请确认 Unity 脚本编译已成功完成。");
             }
 
             if (!typeof(ConfigDataBase).IsAssignableFrom(dataType))
@@ -184,18 +164,14 @@ namespace GameFramework.ConfigData.Editor
             Type expectedListType = typeof(List<>).MakeGenericType(dataType);
             if (dataListField.FieldType != expectedListType)
             {
-                throw new InvalidOperationException(
-                    $"配置表“{schema.TableName}”的序列化列表类型不匹配：" +
-                    $"期望“{expectedListType.FullName}”，实际“{dataListField.FieldType.FullName}”。");
+                throw new InvalidOperationException($"配置表“{schema.TableName}”的序列化列表类型不匹配：" + $"期望“{expectedListType.FullName}”，实际“{dataListField.FieldType.FullName}”。");
             }
 
             IList typedRows = (IList)Activator.CreateInstance(expectedListType);
             foreach (ConfigTableDataRow sourceRow in definition.Rows)
             {
                 object targetRow = Activator.CreateInstance(dataType);
-                for (int fieldIndex = 0;
-                     fieldIndex < schema.Fields.Count;
-                     fieldIndex++)
+                for (int fieldIndex = 0; fieldIndex < schema.Fields.Count; fieldIndex++)
                 {
                     ConfigFieldSchema field = schema.Fields[fieldIndex];
                     object value = sourceRow.Values[fieldIndex];
@@ -210,28 +186,20 @@ namespace GameFramework.ConfigData.Editor
                 typedRows.Add(targetRow);
             }
 
-            string assetPath =
-                $"{tableAssetFolder}/" +
-                $"{schema.TableName}SO.asset";
-            ConfigTableSOBase existingAsset =
-                AssetDatabase.LoadAssetAtPath<ConfigTableSOBase>(assetPath);
+            string assetPath = $"{tableAssetFolder}/" + $"{schema.TableName}SO.asset";
+            ConfigTableSOBase existingAsset = AssetDatabase.LoadAssetAtPath<ConfigTableSOBase>(assetPath);
 
             if (existingAsset == null)
             {
                 Object existing = AssetDatabase.LoadMainAssetAtPath(assetPath);
                 if (existing != null)
                 {
-                    throw new InvalidOperationException(
-                        $"路径“{assetPath}”已存在类型为" +
-                        $"“{existing.GetType().FullName}”的非配置表资产。");
+                    throw new InvalidOperationException($"路径“{assetPath}”已存在类型为" + $"“{existing.GetType().FullName}”的非配置表资产。");
                 }
             }
             else if (existingAsset.GetType() != tableType)
             {
-                throw new InvalidOperationException(
-                    $"既有资产“{assetPath}”的类型为" +
-                    $"“{existingAsset.GetType().FullName}”，与当前生成类型" +
-                    $"“{tableType.FullName}”不一致。请手动确认旧资产后再处理。");
+                throw new InvalidOperationException($"既有资产“{assetPath}”的类型为" + $"“{existingAsset.GetType().FullName}”，与当前生成类型" + $"“{tableType.FullName}”不一致。请手动确认旧资产后再处理。");
             }
 
             return new PreparedTable(
@@ -252,36 +220,25 @@ namespace GameFramework.ConfigData.Editor
         {
             if (string.Equals(field.Name, "ID", StringComparison.Ordinal))
             {
-                PropertyInfo idProperty = dataType.GetProperty(
-                    "ID",
-                    BindingFlags.Instance | BindingFlags.Public);
+                PropertyInfo idProperty = dataType.GetProperty("ID", BindingFlags.Instance | BindingFlags.Public);
                 if (idProperty == null || !idProperty.CanWrite)
                 {
-                    throw new MissingMemberException(
-                        dataType.FullName,
-                        "ID");
+                    throw new MissingMemberException(dataType.FullName, "ID");
                 }
 
                 idProperty.SetValue(target, value);
                 return;
             }
 
-            FieldInfo targetField = dataType.GetField(
-                field.Name,
-                BindingFlags.Instance | BindingFlags.Public);
+            FieldInfo targetField = dataType.GetField(field.Name, BindingFlags.Instance | BindingFlags.Public);
             if (targetField == null)
             {
-                throw new MissingFieldException(
-                    $"生成类型“{dataType.FullName}”缺少字段“{field.Name}”" +
-                    $"（CSV 第 {sourceRow} 行）。");
+                throw new MissingFieldException($"生成类型“{dataType.FullName}”缺少字段“{field.Name}”" + $"（CSV 第 {sourceRow} 行）。");
             }
 
             if (value != null && !targetField.FieldType.IsInstanceOfType(value))
             {
-                throw new InvalidCastException(
-                    $"字段“{dataType.Name}.{field.Name}”期望" +
-                    $"“{targetField.FieldType.FullName}”，实际收到" +
-                    $"“{value.GetType().FullName}”（CSV 第 {sourceRow} 行）。");
+                throw new InvalidCastException($"字段“{dataType.Name}.{field.Name}”期望" + $"“{targetField.FieldType.FullName}”，实际收到" + $"“{value.GetType().FullName}”（CSV 第 {sourceRow} 行）。");
             }
 
             targetField.SetValue(target, value);
@@ -295,10 +252,7 @@ namespace GameFramework.ConfigData.Editor
         {
             foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
-                Type type = assembly.GetType(
-                    fullName,
-                    throwOnError: false,
-                    ignoreCase: false);
+                Type type = assembly.GetType(fullName, throwOnError: false, ignoreCase: false);
                 if (type != null)
                 {
                     return type;
@@ -310,13 +264,9 @@ namespace GameFramework.ConfigData.Editor
 
         private static FieldInfo FindField(Type type, string fieldName)
         {
-            for (Type current = type;
-                 current != null;
-                 current = current.BaseType)
+            for (Type current = type; current != null; current = current.BaseType)
             {
-                FieldInfo field = current.GetField(
-                    fieldName,
-                    DeclaredInstanceFlags);
+                FieldInfo field = current.GetField(fieldName, DeclaredInstanceFlags);
                 if (field != null)
                 {
                     return field;
@@ -333,20 +283,14 @@ namespace GameFramework.ConfigData.Editor
         {
             if (string.IsNullOrWhiteSpace(assetFolderPath))
             {
-                throw new ArgumentException(
-                    "配置表 SO 输出目录不能为空。",
-                    nameof(assetFolderPath));
+                throw new ArgumentException("配置表 SO 输出目录不能为空。", nameof(assetFolderPath));
             }
 
-            string normalized = assetFolderPath
-                .Replace('\\', '/')
-                .TrimEnd('/');
+            string normalized = assetFolderPath.Replace('\\', '/').TrimEnd('/');
             if (!string.Equals(normalized, "Assets", StringComparison.Ordinal) &&
                 !normalized.StartsWith("Assets/", StringComparison.Ordinal))
             {
-                throw new ArgumentException(
-                    $"配置表 SO 输出目录必须位于 Assets 下：{assetFolderPath}",
-                    nameof(assetFolderPath));
+                throw new ArgumentException($"配置表 SO 输出目录必须位于 Assets 下：{assetFolderPath}", nameof(assetFolderPath));
             }
 
             return normalized;
@@ -367,9 +311,7 @@ namespace GameFramework.ConfigData.Editor
             if (segments.Length == 0 ||
                 !string.Equals(segments[0], "Assets", StringComparison.Ordinal))
             {
-                throw new ArgumentException(
-                    $"资产目录必须位于 Assets 下：{assetFolderPath}",
-                    nameof(assetFolderPath));
+                throw new ArgumentException($"资产目录必须位于 Assets 下：{assetFolderPath}", nameof(assetFolderPath));
             }
 
             string current = "Assets";
@@ -390,9 +332,7 @@ namespace GameFramework.ConfigData.Editor
             int separatorIndex = assetPath.LastIndexOf('/');
             if (separatorIndex <= 0)
             {
-                throw new ArgumentException(
-                    $"无法确定资产父目录：{assetPath}",
-                    nameof(assetPath));
+                throw new ArgumentException($"无法确定资产父目录：{assetPath}", nameof(assetPath));
             }
 
             return assetPath.Substring(0, separatorIndex);

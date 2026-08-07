@@ -27,21 +27,21 @@ namespace GameFramework.ConfigData.Generated
         /// <summary>
         /// 整数列表导出测试
         /// </summary>
-        public List<int> TestIntList = new List<int>();
+        public List<int> TestIntList = new();
 
         /// <summary>
         /// 浮点数列表导出测试
         /// </summary>
-        public List<float> TestFloatList = new List<float>();
+        public List<float> TestFloatList = new();
 
         /// <summary>
         /// 布尔值列表导出测试
         /// </summary>
-        public List<bool> TestBoolList = new List<bool>();
+        public List<bool> TestBoolList = new();
 
         /// <summary>
         /// 字符串列表导出测试
         /// </summary>
-        public List<string> TestStringlList = new List<string>();
+        public List<string> TestStringlList = new();
     }
 }

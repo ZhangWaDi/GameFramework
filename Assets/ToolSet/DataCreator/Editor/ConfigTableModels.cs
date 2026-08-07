@@ -55,9 +55,7 @@ namespace GameFramework.ConfigData.Editor
 
         public override string ToString()
         {
-            string location = Row > 0
-                ? $"{SourcePath}({Row},{Math.Max(1, Column)})"
-                : SourcePath;
+            string location = Row > 0 ? $"{SourcePath}({Row},{Math.Max(1, Column)})" : SourcePath;
 
             return $"[{Severity}] {location}: {Message}";
         }
@@ -172,7 +170,7 @@ namespace GameFramework.ConfigData.Editor
 
         public string ToDisplayMessage()
         {
-            StringBuilder message = new StringBuilder();
+            StringBuilder message = new();
             message.AppendLine($"配置表：{TableCount}");
             message.AppendLine($"数据行：{DataRowCount}");
             message.AppendLine($"警告：{WarningCount}");
@@ -212,10 +210,9 @@ namespace GameFramework.ConfigData.Editor
             string summary,
             IReadOnlyList<ConfigTableDiagnostic> diagnostics)
         {
-            IEnumerable<ConfigTableDiagnostic> errors = diagnostics
-                .Where(item => item.Severity == ConfigDiagnosticSeverity.Error);
+            IEnumerable<ConfigTableDiagnostic> errors = diagnostics.Where(item => item.Severity == ConfigDiagnosticSeverity.Error);
 
-            StringBuilder message = new StringBuilder(summary);
+            StringBuilder message = new(summary);
             foreach (ConfigTableDiagnostic error in errors.Take(20))
             {
                 message.AppendLine();
@@ -239,8 +236,7 @@ namespace GameFramework.ConfigData.Editor
     internal static class ConfigTableGenerationPaths
     {
         public const string GeneratedNamespace = "GameFramework.ConfigData.Generated";
-        public const string DefaultGeneratedScriptFolder =
-            "Assets/C#Scripts/Generated/ConfigData";
+        public const string DefaultGeneratedScriptFolder = "Assets/C#Scripts/Generated/ConfigData";
         public const string DefaultTableAssetFolder = "Assets/Resources/ConfigData/Tables";
         public const string DatabaseAssetPath = "Assets/Resources/ConfigData/ConfigDatabase.asset";
     }

@@ -3,6 +3,6 @@
 #desc,Id导出测试,整数列表导出测试,浮点数列表导出测试,布尔值列表导出测试,字符串列表导出测试
 #check,"Nonempty,Unique",,,,
 #default,,"1,2",,"TRUE,FALSE",
-#测试row1,10001,"1,2,3,4","1f,2.0f,3.3f","FALSE,FALSE","AAA,BBB,CCC"
+#测试row1,10001,"1,2,3,4","1,2.0,3.3","FALSE,FALSE","AAA,BBB,CCC"
 #测试row2,10002,"1,2,3,4,5",,"FALSE,FALSE,FALSE",
-#测试row3,10003,,,"FALSE,FALSE,FALSE,FALSE",
+#测试row3,10003,,,,

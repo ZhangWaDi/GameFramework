@@ -9,11 +9,24 @@ namespace GameFramework.EventSystem
     /// </summary>
     public sealed class EventCenter : Singleton<EventCenter>
     {
-        private readonly object syncRoot = new object();
-        private readonly Dictionary<Enum, IEventSlot> eventSlots = new Dictionary<Enum, IEventSlot>();
+        public int EventCount
+        {
+            get
+            {
+                lock (syncRoot)
+                {
+                    return eventSlots.Count;
+                }
+            }
+        }
+        private readonly object syncRoot = new();
+        private readonly Dictionary<Enum, IEventSlot> eventSlots = new();
+        protected override void OnRelease()
+        {
+            ClearAllEventListeners();
+        }
 
-        #region Add listeners
-
+        #region 添加事件监听
         public void AddEventListener(Enum eventName, Action listener, bool isOnce = false)
         {
             AddListener(eventName, listener, isOnce);
@@ -66,11 +79,9 @@ namespace GameFramework.EventSystem
         {
             AddListener(eventName, listener, true);
         }
-
         #endregion
 
-        #region Remove listeners
-
+        #region 移除事件监听
         public void RemoveEventListener(Enum eventName, Action listener)
         {
             RemoveListener(eventName, listener);
@@ -118,11 +129,9 @@ namespace GameFramework.EventSystem
                 eventSlots.Clear();
             }
         }
-
         #endregion
 
-        #region Trigger events
-
+        #region 触发事件
         public void EventTrigger(Enum eventName)
         {
             if (TryTakeListeners(
@@ -174,28 +183,9 @@ namespace GameFramework.EventSystem
                 onceListeners?.Invoke(arg1, arg2, arg3);
             }
         }
-
         #endregion
 
-        /// <summary>
-        /// 获取当前注册了监听器的事件数量。
-        /// </summary>
-        public int EventCount
-        {
-            get
-            {
-                lock (syncRoot)
-                {
-                    return eventSlots.Count;
-                }
-            }
-        }
-
-        protected override void OnRelease()
-        {
-            ClearAllEventListeners();
-        }
-
+        #region 内部实现
         private void AddListener<TDelegate>(
             Enum eventName,
             TDelegate listener,
@@ -231,8 +221,7 @@ namespace GameFramework.EventSystem
                     return;
                 }
 
-                EventSlot<TDelegate> eventSlot =
-                    GetTypedEventSlot<TDelegate>(eventName, rawEventSlot);
+                EventSlot<TDelegate> eventSlot = GetTypedEventSlot<TDelegate>(eventName, rawEventSlot);
                 eventSlot.Remove(listener);
 
                 if (eventSlot.IsEmpty)
@@ -279,7 +268,7 @@ namespace GameFramework.EventSystem
                 return GetTypedEventSlot<TDelegate>(eventName, rawEventSlot);
             }
 
-            EventSlot<TDelegate> eventSlot = new EventSlot<TDelegate>();
+            EventSlot<TDelegate> eventSlot = new();
             eventSlots.Add(eventName, eventSlot);
             return eventSlot;
         }
@@ -294,10 +283,7 @@ namespace GameFramework.EventSystem
                 return typedEventSlot;
             }
 
-            throw new InvalidOperationException(
-                $"事件 {eventName.GetType().Name}.{eventName} 已使用委托签名 " +
-                $"{eventSlot.DelegateType.Name} 注册，不能再作为 " +
-                $"{typeof(TDelegate).Name} 使用。");
+            throw new InvalidOperationException($"事件 {eventName.GetType().Name}.{eventName} 已使用委托签名 " + $"{eventSlot.DelegateType.Name} 注册，不能再作为 " + $"{typeof(TDelegate).Name} 使用。");
         }
 
         private static void ValidateEventName(Enum eventName)
@@ -349,5 +335,6 @@ namespace GameFramework.EventSystem
                 onceListeners = null;
             }
         }
+        #endregion
     }
 }

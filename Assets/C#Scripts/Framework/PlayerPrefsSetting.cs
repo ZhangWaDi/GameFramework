@@ -195,9 +195,7 @@ namespace GameFramework
         {
             if (string.IsNullOrWhiteSpace(keyName))
             {
-                throw new ArgumentException(
-                    "PlayerPrefs 键不能为空或仅包含空白字符。",
-                    nameof(keyName));
+                throw new ArgumentException("PlayerPrefs 键不能为空或仅包含空白字符。", nameof(keyName));
             }
         }
 

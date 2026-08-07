@@ -16,6 +16,6 @@ MonoBehaviour:
   csvOutputFolder: {fileID: 102900000, guid: d96a66a1d4dc62f4696e0811736dab8f, type: 3}
   soScriptOutputFolder: {fileID: 102900000, guid: 8ae84a3bd65ebfc40b8b9bdcd1b107e9, type: 3}
   soAssetOutputFolder: {fileID: 102900000, guid: 4b9460eff7001cb41bbc18e958deee61, type: 3}
-  lastGeneratedScriptOutputFolderPath: Assets/C#Scripts/Generated/ConfigData
+  lastGeneratedScriptOutputFolderPath: Assets/C#Scripts/ConfigDataSOScripts
   dataStartRow: 6
   dataStartColumn: 2
