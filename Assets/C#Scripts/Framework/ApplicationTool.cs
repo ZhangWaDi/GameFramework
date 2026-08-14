@@ -31,6 +31,10 @@ namespace GameFramework
         /// </summary>
         public static RuntimePlatform CurrentPlatform => Application.platform;
 
+        /// <summary>
+        /// Unity 报告的设备当前系统语言。
+        /// </summary>
+        public static SystemLanguage CurrentSystemLanguage => Application.systemLanguage;
         #endregion
 
         #region 网络状态

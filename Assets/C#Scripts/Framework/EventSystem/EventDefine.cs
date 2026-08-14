@@ -8,6 +8,7 @@ namespace GameFramework.EventSystem
     {
         /// <summary>
         /// 当前使用的语言发生变化。
+        /// 使用无参事件签名，监听方可从 LocalizationMgr 获取切换后的语言和数据。
         /// </summary>
         OnLanguageChanged
     }

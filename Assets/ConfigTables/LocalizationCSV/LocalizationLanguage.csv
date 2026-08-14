@@ -1,0 +1,6 @@
+﻿#var,Key,ChineseSimplified,ChineseTraditional,English
+#type,string,string,string,string
+#desc,多语言文本key,简体中文文本值,繁体中文文本值,英语文本值
+#check,"NonEmpty,Unique",,,
+#default,,test_简体中文默认值,test_繁體中文預設值,test_English default value
+,key_TestText,测试文本,測試文字,Test text

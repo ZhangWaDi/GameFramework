@@ -1,0 +1,6 @@
+﻿#var,Key,ChineseSimplified,ChineseTraditional,English
+#type,string,string,string,string
+#desc,路径key,简体中文路径key,繁体中文路径key,英语路径key
+#check,"NonEmpty,Unique",,,
+#default,,test_简体中文资源路径默认值,test_繁體中文資源路徑預設值,test_English Test resource path default value
+,key_Path,测试资源路径,測試資源路徑,Test resource path

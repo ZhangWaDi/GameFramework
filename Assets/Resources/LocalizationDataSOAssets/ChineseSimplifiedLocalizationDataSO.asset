@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a060e758f63b7d24396fc2e8e5af1766, type: 3}
+  m_Name: ChineseSimplifiedLocalizationDataSO
+  m_EditorClassIdentifier: 
+  generatorId: GameFramework.LocalizationDataCreator
+  language: ChineseSimplified
+  sections:
+  - tableId: LocalizationLanguage
+    entries:
+    - key: key_TestText
+      value: "\u6D4B\u8BD5\u6587\u672C"
+  - tableId: LocalizationResPath
+    entries:
+    - key: key_Path
+      value: "\u6D4B\u8BD5\u8D44\u6E90\u8DEF\u5F84"
