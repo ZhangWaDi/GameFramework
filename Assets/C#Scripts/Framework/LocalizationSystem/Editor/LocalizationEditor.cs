@@ -101,7 +101,7 @@ namespace GameFramework.LocalizationSystem.Editor
         {
             if (string.IsNullOrWhiteSpace(localizationKeyProperty.stringValue))
             {
-                EditorGUILayout.HelpBox("尚未配置本地化 Key。显示文本不会被自动用作 Key。", MessageType.Warning);
+                EditorGUILayout.HelpBox("尚未配置本地化 Key。添加组件或在编辑器中提交 Text/TMP_Text 文本修改时会自动同步；运行时直接修改 text 不会同步。", MessageType.Warning);
                 return;
             }
 
@@ -248,6 +248,7 @@ namespace GameFramework.LocalizationSystem.Editor
             SerializedObject serializedComponent = new(localizedComponent);
             serializedComponent.FindProperty("targetType").enumValueIndex = (int)targetType;
             serializedComponent.FindProperty(GetTargetPropertyName(targetType)).objectReferenceValue = targetComponent;
+            if (targetType != LocalizedTargetType.Image) serializedComponent.FindProperty("localizationKey").stringValue = GetInitialLocalizationKey(targetComponent, targetType);
             serializedComponent.ApplyModifiedProperties();
             PrefabUtility.RecordPrefabInstancePropertyModifications(localizedComponent);
             EditorUtility.SetDirty(localizedComponent);
@@ -258,6 +259,16 @@ namespace GameFramework.LocalizationSystem.Editor
             }
 
             Selection.activeObject = localizedComponent;
+        }
+
+        private static string GetInitialLocalizationKey(Component targetComponent, LocalizedTargetType targetType)
+        {
+            return targetType switch
+            {
+                LocalizedTargetType.Text when targetComponent is Text text => text.text ?? string.Empty,
+                LocalizedTargetType.TextMeshPro when targetComponent is TMP_Text textMeshPro => textMeshPro.text ?? string.Empty,
+                _ => string.Empty
+            };
         }
 
         private static string GetTargetPropertyName(LocalizedTargetType targetType)

@@ -42,6 +42,7 @@ namespace GameFramework.LocalizationSystem
         {
             DetectTargetType();
             TryBindTarget();
+            InitializeKeyFromTarget();
         }
 
         private void OnValidate()
@@ -254,6 +255,18 @@ namespace GameFramework.LocalizationSystem
                 targetType = LocalizedTargetType.Image;
                 targetImage = detectedImage;
             }
+        }
+
+        private void InitializeKeyFromTarget()
+        {
+            if (!string.IsNullOrWhiteSpace(localizationKey)) return;
+
+            localizationKey = targetType switch
+            {
+                LocalizedTargetType.Text => legacyText == null ? string.Empty : legacyText.text ?? string.Empty,
+                LocalizedTargetType.TextMeshPro => textMeshPro == null ? string.Empty : textMeshPro.text ?? string.Empty,
+                _ => localizationKey
+            };
         }
 
         private void CancelImageLoad()

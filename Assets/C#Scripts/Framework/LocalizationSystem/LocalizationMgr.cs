@@ -18,6 +18,11 @@ namespace GameFramework.LocalizationSystem
 
         private LocalizationLanguage currentLanguage;
         private bool isInitialized;
+
+        /// <summary>
+        /// 当前是否已完成语言解析、语言包加载和查询缓存构建。
+        /// </summary>
+        public bool IsInitialized => isInitialized;
         private ILocalizationPackageProvider packageProvider;
         private LocalizationCatalogSO catalog;
         private LocalizationDataSO currentLanguagePackage;
@@ -25,10 +30,7 @@ namespace GameFramework.LocalizationSystem
         private Dictionary<string, string> currentTextLookup = new(StringComparer.Ordinal);
         private Dictionary<string, string> currentResourcePathLookup = new(StringComparer.Ordinal);
 
-        /// <summary>
-        /// 当前是否已完成语言解析、语言包加载和查询缓存构建。
-        /// </summary>
-        public bool IsInitialized => isInitialized;
+
 
         /// <summary>
         /// 获取当前语言类型。
@@ -42,9 +44,6 @@ namespace GameFramework.LocalizationSystem
             }
         }
 
-        /// <summary>
-        /// 使用默认 Resources Provider 初始化本地化管理器。
-        /// </summary>
         public override void OnInit()
         {
             if (isInitialized)
